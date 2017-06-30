@@ -7,6 +7,8 @@
 #include <vector>
 
 namespace zipkin {
+using SystemClock = std::chrono::system_clock;
+using SteadyClock = std::chrono::steady_clock;
 /* /** */
 /*  * Utility class for formatting dates given a strftime style format string. */
 /*  *1/ */
@@ -36,28 +38,6 @@ namespace zipkin {
 /* class AccessLogDateTimeFormatter { */
 /* public: */
 /*   static std::string fromTime(const SystemTime& time); */
-/* }; */
-
-/* /** */
-/*  * Production implementation of SystemTimeSource that returns the current time. */
-/*  *1/ */
-/* class ProdSystemTimeSource : public SystemTimeSource { */
-/* public: */
-/*   // SystemTimeSource */
-/*   SystemTime currentTime() override { return std::chrono::system_clock::now(); } */
-
-/*   static ProdSystemTimeSource instance_; */
-/* }; */
-
-/* /** */
-/*  * Production implementation of MonotonicTimeSource that returns the current time. */
-/*  *1/ */
-/* class ProdMonotonicTimeSource : public MonotonicTimeSource { */
-/* public: */
-/*   // MonotonicTimeSource */
-/*   MonotonicTime currentTime() override { return std::chrono::steady_clock::now(); } */
-
-/*   static ProdMonotonicTimeSource instance_; */
 /* }; */
 
 /* /** */

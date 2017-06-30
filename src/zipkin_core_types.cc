@@ -1,9 +1,9 @@
 #include "zipkin_core_types.h"
 
-/* #include "common/common/utility.h" */
-/* #include "common/tracing/zipkin/span_context.h" */
+#include "utility.h"
+#include "span_context.h"
 /* #include "common/tracing/zipkin/util.h" */
-/* #include "common/tracing/zipkin/zipkin_core_constants.h" */
+#include "zipkin_core_constants.h"
 /* #include "common/tracing/zipkin/zipkin_json_field_names.h" */
 
 /* #include "rapidjson/stringbuffer.h" */
@@ -218,35 +218,35 @@ const std::string Span::toJson() {
 }
 
 void Span::finish() {
-  /* // Assumption: Span will have only one annotation when this method is called */
-  /* SpanContext context(*this); */
-  /* if (context.annotationSet().sr_ && !context.annotationSet().ss_) { */
-  /*   // Need to set the SS annotation */
-  /*   Annotation ss; */
-  /*   ss.setEndpoint(annotations_[0].endpoint()); */
-  /*   ss.setTimestamp(std::chrono::duration_cast<std::chrono::microseconds>( */
-  /*                       ProdSystemTimeSource::instance_.currentTime().time_since_epoch()).count()); */
-  /*   ss.setValue(ZipkinCoreConstants::get().SERVER_SEND); */
-  /*   annotations_.push_back(std::move(ss)); */
-  /* } else if (context.annotationSet().cs_ && !context.annotationSet().cr_) { */
-  /*   // Need to set the CR annotation */
-  /*   Annotation cr; */
-  /*   const uint64_t stop_timestamp = */
-  /*       std::chrono::duration_cast<std::chrono::microseconds>( */
-  /*           ProdSystemTimeSource::instance_.currentTime().time_since_epoch()).count(); */
-  /*   cr.setEndpoint(annotations_[0].endpoint()); */
-  /*   cr.setTimestamp(stop_timestamp); */
-  /*   cr.setValue(ZipkinCoreConstants::get().CLIENT_RECV); */
-  /*   annotations_.push_back(std::move(cr)); */
-  /*   const int64_t monotonic_stop_time = */
-  /*       std::chrono::duration_cast<std::chrono::microseconds>( */
-  /*           ProdMonotonicTimeSource::instance_.currentTime().time_since_epoch()).count(); */
-  /*   setDuration(monotonic_stop_time - monotonic_start_time_); */
-  /* } */
+  // Assumption: Span will have only one annotation when this method is called
+  SpanContext context(*this);
+  if (context.annotationSet().sr_ && !context.annotationSet().ss_) {
+    // Need to set the SS annotation
+    Annotation ss;
+    ss.setEndpoint(annotations_[0].endpoint());
+    ss.setTimestamp(std::chrono::duration_cast<std::chrono::microseconds>(
+                        SystemClock::now().time_since_epoch()).count());
+    ss.setValue(ZipkinCoreConstants::get().SERVER_SEND);
+    annotations_.push_back(std::move(ss));
+  } else if (context.annotationSet().cs_ && !context.annotationSet().cr_) {
+    // Need to set the CR annotation
+    Annotation cr;
+    const uint64_t stop_timestamp =
+        std::chrono::duration_cast<std::chrono::microseconds>(
+            SystemClock::now().time_since_epoch()).count();
+    cr.setEndpoint(annotations_[0].endpoint());
+    cr.setTimestamp(stop_timestamp);
+    cr.setValue(ZipkinCoreConstants::get().CLIENT_RECV);
+    annotations_.push_back(std::move(cr));
+    const int64_t monotonic_stop_time =
+        std::chrono::duration_cast<std::chrono::microseconds>(
+            SteadyClock::now().time_since_epoch()).count();
+    setDuration(monotonic_stop_time - monotonic_start_time_);
+  }
 
-  /* if (auto t = tracer()) { */
-  /*   t->reportSpan(std::move(*this)); */
-  /* } */
+  if (auto t = tracer()) {
+    t->reportSpan(std::move(*this));
+  }
 }
 
 void Span::setTag(const std::string& name, const std::string& value) {
