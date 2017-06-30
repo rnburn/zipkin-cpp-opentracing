@@ -7,7 +7,7 @@
 #include "optional.h"
 #include "tracer_interface.h"
 #include "hex.h"
-/* #include "envoy/network/address.h" */
+#include "address.h"
 
 /* #include "common/common/hex.h" */
 /* #include "common/tracing/zipkin/tracer_interface.h" */
@@ -60,18 +60,18 @@ public:
    * @param service_name String representing the endpoint's service name
    * @param address Pointer to an object representing the endpoint's network address
    */
-  /* Endpoint(const std::string& service_name, Network::Address::InstanceConstSharedPtr address) */
-  /*     : service_name_(service_name), address_(address) {} */
+  Endpoint(const std::string& service_name, const IpAddress& address)
+      : service_name_(service_name), address_(address) {}
 
   /**
    * @return the endpoint's address.
    */
-  /* Network::Address::InstanceConstSharedPtr address() const { return address_; } */
+  const IpAddress& address() const { return address_; }
 
   /**
    * Sets the endpoint's address
    */
-  /* void setAddress(Network::Address::InstanceConstSharedPtr address) { address_ = address; } */
+  void setAddress(const IpAddress& address) { address_ = address; }
 
   /**
    * @return the endpoint's service name attribute.
@@ -92,7 +92,7 @@ public:
 
 private:
   std::string service_name_;
-  /* Network::Address::InstanceConstSharedPtr address_; */
+  IpAddress address_;
 };
 
 /**
