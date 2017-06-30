@@ -6,6 +6,7 @@
 
 #include "optional.h"
 #include "tracer_interface.h"
+#include "hex.h"
 /* #include "envoy/network/address.h" */
 
 /* #include "common/common/hex.h" */
@@ -429,7 +430,7 @@ public:
   /**
    * @return the span's id as a hexadecimal string.
    */
-  /* const std::string idAsHexString() const { return Hex::uint64ToHex(id_); } */
+  const std::string idAsHexString() const { return Hex::uint64ToHex(id_); }
 
   /**
    * @return the span's name.
@@ -444,9 +445,9 @@ public:
   /**
    * @return the span's parent id as a hexadecimal string.
    */
-  /* const std::string parentIdAsHexString() const { */
-  /*   return parent_id_.valid() ? Hex::uint64ToHex(parent_id_.value()) : EMPTY_HEX_STRING_; */
-  /* } */
+  const std::string parentIdAsHexString() const {
+    return parent_id_.valid() ? Hex::uint64ToHex(parent_id_.value()) : EMPTY_HEX_STRING_;
+  }
 
   /**
    * @return whether or not the debug attribute is set
@@ -466,7 +467,7 @@ public:
   /**
    * @return the span's trace id as a hexadecimal string.
    */
-  /* const std::string traceIdAsHexString() const { return Hex::uint64ToHex(trace_id_); } */
+  const std::string traceIdAsHexString() const { return Hex::uint64ToHex(trace_id_); }
 
   /**
    * @return the higher 64 bits of a 128-bit trace id.
