@@ -5,10 +5,18 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#include <strings.h>
 
 namespace zipkin {
 using SystemClock = std::chrono::system_clock;
 using SteadyClock = std::chrono::steady_clock;
+using SystemTime = SystemClock::time_point;
+using SteadyTime = SteadyClock::time_point;
+
+class RandomUtil {
+ public:
+   static uint64_t generateId();
+};
 /* /** */
 /*  * Utility class for formatting dates given a strftime style format string. */
 /*  *1/ */

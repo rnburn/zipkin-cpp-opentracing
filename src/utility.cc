@@ -7,9 +7,13 @@
 #include <string>
 #include <vector>
 #include <climits>
-#include <strings.h>
+#include <random>
 
 namespace zipkin {
+uint64_t RandomUtil::generateId() {
+  static thread_local std::mt19937_64 rand_source{std::random_device{}()};
+  return rand_source();
+}
 /* std::string DateFormatter::fromTime(const SystemTime& time) { */
 /*   return fromTimeT(std::chrono::system_clock::to_time_t(time)); */
 /* } */
