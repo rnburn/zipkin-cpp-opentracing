@@ -2,8 +2,10 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "optional.h"
+#include "tracer_interface.h"
 /* #include "envoy/network/address.h" */
 
 /* #include "common/common/hex.h" */
@@ -285,261 +287,261 @@ private:
   AnnotationType annotation_type_;
 };
 
-/* typedef std::unique_ptr<Span> SpanPtr; */
+typedef std::unique_ptr<Span> SpanPtr;
 
-/* /** */
-/*  * Represents a Zipkin span. This class is based on Zipkin's Thrift definition of a span. */
-/*  *1/ */
-/* class Span : public ZipkinBase { */
-/* public: */
-/*   /** */
-/*    * Copy constructor. */
-/*    *1/ */
-/*   Span(const Span&); */
+/**
+ * Represents a Zipkin span. This class is based on Zipkin's Thrift definition of a span.
+ */
+class Span : public ZipkinBase {
+public:
+  /**
+   * Copy constructor.
+   */
+  Span(const Span&);
 
-/*   /** */
-/*    * Default constructor. Creates an empty span. */
-/*    *1/ */
-/*   Span() */
-/*       : trace_id_(0), name_(), id_(0), debug_(false), monotonic_start_time_(0), tracer_(nullptr) {} */
+  /**
+   * Default constructor. Creates an empty span.
+   */
+  Span()
+      : trace_id_(0), name_(), id_(0), debug_(false), monotonic_start_time_(0), tracer_(nullptr) {}
 
-/*   /** */
-/*    * Sets the span's trace id attribute. */
-/*    *1/ */
-/*   void setTraceId(const uint64_t val) { trace_id_ = val; } */
+  /**
+   * Sets the span's trace id attribute.
+   */
+  void setTraceId(const uint64_t val) { trace_id_ = val; }
 
-/*   /** */
-/*    * Sets the span's name attribute. */
-/*    *1/ */
-/*   void setName(const std::string& val) { name_ = val; } */
+  /**
+   * Sets the span's name attribute.
+   */
+  void setName(const std::string& val) { name_ = val; }
 
-/*   /** */
-/*    * Sets the span's id. */
-/*    *1/ */
-/*   void setId(const uint64_t val) { id_ = val; } */
+  /**
+   * Sets the span's id.
+   */
+  void setId(const uint64_t val) { id_ = val; }
 
-/*   /** */
-/*    * Sets the span's parent id. */
-/*    *1/ */
-/*   void setParentId(const uint64_t val) { parent_id_.value(val); } */
+  /**
+   * Sets the span's parent id.
+   */
+  void setParentId(const uint64_t val) { parent_id_.value(val); }
 
-/*   /** */
-/*    * @return Whether or not the parent_id attribute is set. */
-/*    *1/ */
-/*   bool isSetParentId() const { return parent_id_.valid(); } */
+  /**
+   * @return Whether or not the parent_id attribute is set.
+   */
+  bool isSetParentId() const { return parent_id_.valid(); }
 
-/*   /** */
-/*    * @return a vector with all annotations added to the span. */
-/*    *1/ */
-/*   const std::vector<Annotation>& annotations() { return annotations_; } */
+  /**
+   * @return a vector with all annotations added to the span.
+   */
+  const std::vector<Annotation>& annotations() { return annotations_; }
 
-/*   /** */
-/*    * Sets the span's annotations all at once. */
-/*    *1/ */
-/*   void setAnnotations(const std::vector<Annotation>& val) { annotations_ = val; } */
+  /**
+   * Sets the span's annotations all at once.
+   */
+  void setAnnotations(const std::vector<Annotation>& val) { annotations_ = val; }
 
-/*   /** */
-/*    * Adds an annotation to the span (copy semantics). */
-/*    *1/ */
-/*   void addAnnotation(const Annotation& ann) { annotations_.push_back(ann); } */
+  /**
+   * Adds an annotation to the span (copy semantics).
+   */
+  void addAnnotation(const Annotation& ann) { annotations_.push_back(ann); }
 
-/*   /** */
-/*    * Adds an annotation to the span (move semantics). */
-/*    *1/ */
-/*   void addAnnotation(const Annotation&& ann) { annotations_.push_back(ann); } */
+  /**
+   * Adds an annotation to the span (move semantics).
+   */
+  void addAnnotation(const Annotation&& ann) { annotations_.push_back(ann); }
 
-/*   /** */
-/*    * Sets the span's binary annotations all at once. */
-/*    *1/ */
-/*   void setBinaryAnnotations(const std::vector<BinaryAnnotation>& val) { binary_annotations_ = val; } */
+  /**
+   * Sets the span's binary annotations all at once.
+   */
+  void setBinaryAnnotations(const std::vector<BinaryAnnotation>& val) { binary_annotations_ = val; }
 
-/*   /** */
-/*    * Adds a binary annotation to the span (copy semantics). */
-/*    *1/ */
-/*   void addBinaryAnnotation(const BinaryAnnotation& bann) { binary_annotations_.push_back(bann); } */
+  /**
+   * Adds a binary annotation to the span (copy semantics).
+   */
+  void addBinaryAnnotation(const BinaryAnnotation& bann) { binary_annotations_.push_back(bann); }
 
-/*   /** */
-/*    * Adds a binary annotation to the span (move semantics). */
-/*    *1/ */
-/*   void addBinaryAnnotation(const BinaryAnnotation&& bann) { binary_annotations_.push_back(bann); } */
+  /**
+   * Adds a binary annotation to the span (move semantics).
+   */
+  void addBinaryAnnotation(const BinaryAnnotation&& bann) { binary_annotations_.push_back(bann); }
 
-/*   /** */
-/*    * Sets the span's debug attribute. */
-/*    *1/ */
-/*   void setDebug() { debug_ = true; } */
+  /**
+   * Sets the span's debug attribute.
+   */
+  void setDebug() { debug_ = true; }
 
-/*   /** */
-/*    * Sets the span's timestamp attribute. */
-/*    *1/ */
-/*   void setTimestamp(const int64_t val) { timestamp_.value(val); } */
+  /**
+   * Sets the span's timestamp attribute.
+   */
+  void setTimestamp(const int64_t val) { timestamp_.value(val); }
 
-/*   /** */
-/*    * @return Whether or not the timestamp attribute is set. */
-/*    *1/ */
-/*   bool isSetTimestamp() const { return timestamp_.valid(); } */
+  /**
+   * @return Whether or not the timestamp attribute is set.
+   */
+  bool isSetTimestamp() const { return timestamp_.valid(); }
 
-/*   /** */
-/*    * Sets the span's duration attribute. */
-/*    *1/ */
-/*   void setDuration(const int64_t val) { duration_.value(val); } */
+  /**
+   * Sets the span's duration attribute.
+   */
+  void setDuration(const int64_t val) { duration_.value(val); }
 
-/*   /** */
-/*    * @return Whether or not the duration attribute is set. */
-/*    *1/ */
-/*   bool isSetDuration() const { return duration_.valid(); } */
+  /**
+   * @return Whether or not the duration attribute is set.
+   */
+  bool isSetDuration() const { return duration_.valid(); }
 
-/*   /** */
-/*    * Sets the higher 64 bits of the span's 128-bit trace id. */
-/*    * Note that this is optional, since 64-bit trace ids are valid. */
-/*    *1/ */
-/*   void setTraceIdHigh(const uint64_t val) { trace_id_high_.value(val); } */
+  /**
+   * Sets the higher 64 bits of the span's 128-bit trace id.
+   * Note that this is optional, since 64-bit trace ids are valid.
+   */
+  void setTraceIdHigh(const uint64_t val) { trace_id_high_.value(val); }
 
-/*   /** */
-/*    * @return whether or not the trace_id_high attribute is set. */
-/*    *1/ */
-/*   bool isSetTraceIdHigh() const { return trace_id_high_.valid(); } */
+  /**
+   * @return whether or not the trace_id_high attribute is set.
+   */
+  bool isSetTraceIdHigh() const { return trace_id_high_.valid(); }
 
-/*   /** */
-/*    * Sets the span start-time attribute (monotonic, used to calculate duration). */
-/*    *1/ */
-/*   void setStartTime(const int64_t time) { monotonic_start_time_ = time; } */
+  /**
+   * Sets the span start-time attribute (monotonic, used to calculate duration).
+   */
+  void setStartTime(const int64_t time) { monotonic_start_time_ = time; }
 
-/*   /** */
-/*    * @return the span's annotations. */
-/*    *1/ */
-/*   const std::vector<Annotation>& annotations() const { return annotations_; } */
+  /**
+   * @return the span's annotations.
+   */
+  const std::vector<Annotation>& annotations() const { return annotations_; }
 
-/*   /** */
-/*    * @return the span's binary annotations. */
-/*    *1/ */
-/*   const std::vector<BinaryAnnotation>& binaryAnnotations() const { return binary_annotations_; } */
+  /**
+   * @return the span's binary annotations.
+   */
+  const std::vector<BinaryAnnotation>& binaryAnnotations() const { return binary_annotations_; }
 
-/*   /** */
-/*    * @return the span's duration attribute. */
-/*    *1/ */
-/*   int64_t duration() const { return duration_.value(); } */
+  /**
+   * @return the span's duration attribute.
+   */
+  int64_t duration() const { return duration_.value(); }
 
-/*   /** */
-/*    * @return the span's id as an integer. */
-/*    *1/ */
-/*   uint64_t id() const { return id_; } */
+  /**
+   * @return the span's id as an integer.
+   */
+  uint64_t id() const { return id_; }
 
-/*   /** */
-/*    * @return the span's id as a hexadecimal string. */
-/*    *1/ */
-/*   const std::string idAsHexString() const { return Hex::uint64ToHex(id_); } */
+  /**
+   * @return the span's id as a hexadecimal string.
+   */
+  /* const std::string idAsHexString() const { return Hex::uint64ToHex(id_); } */
 
-/*   /** */
-/*    * @return the span's name. */
-/*    *1/ */
-/*   const std::string& name() const { return name_; } */
+  /**
+   * @return the span's name.
+   */
+  const std::string& name() const { return name_; }
 
-/*   /** */
-/*    * @return the span's parent id as an integer. */
-/*    *1/ */
-/*   uint64_t parentId() const { return parent_id_.value(); } */
+  /**
+   * @return the span's parent id as an integer.
+   */
+  uint64_t parentId() const { return parent_id_.value(); }
 
-/*   /** */
-/*    * @return the span's parent id as a hexadecimal string. */
-/*    *1/ */
-/*   const std::string parentIdAsHexString() const { */
-/*     return parent_id_.valid() ? Hex::uint64ToHex(parent_id_.value()) : EMPTY_HEX_STRING_; */
-/*   } */
+  /**
+   * @return the span's parent id as a hexadecimal string.
+   */
+  /* const std::string parentIdAsHexString() const { */
+  /*   return parent_id_.valid() ? Hex::uint64ToHex(parent_id_.value()) : EMPTY_HEX_STRING_; */
+  /* } */
 
-/*   /** */
-/*    * @return whether or not the debug attribute is set */
-/*    *1/ */
-/*   bool debug() const { return debug_; } */
+  /**
+   * @return whether or not the debug attribute is set
+   */
+  bool debug() const { return debug_; }
 
-/*   /** */
-/*    * @return the span's timestamp (clock time for user presentation: microseconds since epoch). */
-/*    *1/ */
-/*   int64_t timestamp() const { return timestamp_.value(); } */
+  /**
+   * @return the span's timestamp (clock time for user presentation: microseconds since epoch).
+   */
+  int64_t timestamp() const { return timestamp_.value(); }
 
-/*   /** */
-/*    * @return the span's trace id as an integer. */
-/*    *1/ */
-/*   uint64_t traceId() const { return trace_id_; } */
+  /**
+   * @return the span's trace id as an integer.
+   */
+  uint64_t traceId() const { return trace_id_; }
 
-/*   /** */
-/*    * @return the span's trace id as a hexadecimal string. */
-/*    *1/ */
-/*   const std::string traceIdAsHexString() const { return Hex::uint64ToHex(trace_id_); } */
+  /**
+   * @return the span's trace id as a hexadecimal string.
+   */
+  /* const std::string traceIdAsHexString() const { return Hex::uint64ToHex(trace_id_); } */
 
-/*   /** */
-/*    * @return the higher 64 bits of a 128-bit trace id. */
-/*    *1/ */
-/*   uint64_t traceIdHigh() const { return trace_id_high_.value(); } */
+  /**
+   * @return the higher 64 bits of a 128-bit trace id.
+   */
+  uint64_t traceIdHigh() const { return trace_id_high_.value(); }
 
-/*   /** */
-/*    * @return the span's start time (monotonic, used to calculate duration). */
-/*    *1/ */
-/*   int64_t startTime() const { return monotonic_start_time_; } */
+  /**
+   * @return the span's start time (monotonic, used to calculate duration).
+   */
+  int64_t startTime() const { return monotonic_start_time_; }
 
-/*   /** */
-/*    * Replaces the service-name attribute of the span's basic annotations with the provided value. */
-/*    * */
-/*    * This method will operate on all basic annotations that are part of the span when the call */
-/*    * is made. */
-/*    * */
-/*    * @param service_name String to be used as the new service name for all basic annotations */
-/*    *1/ */
-/*   void setServiceName(const std::string& service_name); */
+  /**
+   * Replaces the service-name attribute of the span's basic annotations with the provided value.
+   *
+   * This method will operate on all basic annotations that are part of the span when the call
+   * is made.
+   *
+   * @param service_name String to be used as the new service name for all basic annotations
+   */
+  void setServiceName(const std::string& service_name);
 
-/*   /** */
-/*     * Serializes the span as a Zipkin-compliant JSON representation as a string. */
-/*     * The resulting JSON string can be used as part of an HTTP POST call to */
-/*     * send the span to Zipkin. */
-/*     * */
-/*     * @return a stringified JSON. */
-/*     *1/ */
-/*   const std::string toJson() override; */
+  /**
+    * Serializes the span as a Zipkin-compliant JSON representation as a string.
+    * The resulting JSON string can be used as part of an HTTP POST call to
+    * send the span to Zipkin.
+    *
+    * @return a stringified JSON.
+    */
+  const std::string toJson() override;
 
-/*   /** */
-/*    * Associates a Tracer object with the span. The tracer's reportSpan() method is invoked */
-/*    * by the span's finish() method so that the tracer can decide what to do with the span */
-/*    * when it is finished. */
-/*    * */
-/*    * @param tracer Represents the Tracer object to be associated with the span. */
-/*    *1/ */
-/*   void setTracer(TracerInterface* tracer) { tracer_ = tracer; } */
+  /**
+   * Associates a Tracer object with the span. The tracer's reportSpan() method is invoked
+   * by the span's finish() method so that the tracer can decide what to do with the span
+   * when it is finished.
+   *
+   * @param tracer Represents the Tracer object to be associated with the span.
+   */
+  void setTracer(TracerInterface* tracer) { tracer_ = tracer; }
 
-/*   /** */
-/*    * @return the Tracer object associated with the span. */
-/*    *1/ */
-/*   TracerInterface* tracer() const { return tracer_; } */
+  /**
+   * @return the Tracer object associated with the span.
+   */
+  TracerInterface* tracer() const { return tracer_; }
 
-/*   /** */
-/*    * Marks a successful end of the span. This method will: */
-/*    * */
-/*    * (1) determine if it needs to add more annotations to the span (e.g., a span containing a CS */
-/*    * annotation will need to add a CR annotation) and add them; */
-/*    * (2) compute and set the span's duration; and */
-/*    * (3) invoke the tracer's reportSpan() method if a tracer has been associated with the span. */
-/*    *1/ */
-/*   void finish(); */
+  /**
+   * Marks a successful end of the span. This method will:
+   *
+   * (1) determine if it needs to add more annotations to the span (e.g., a span containing a CS
+   * annotation will need to add a CR annotation) and add them;
+   * (2) compute and set the span's duration; and
+   * (3) invoke the tracer's reportSpan() method if a tracer has been associated with the span.
+   */
+  void finish();
 
-/*   /** */
-/*    * Adds a binary annotation to the span. */
-/*    * */
-/*    * @param name The binary annotation's key. */
-/*    * @param value The binary annotation's value. */
-/*    *1/ */
-/*   void setTag(const std::string& name, const std::string& value); */
+  /**
+   * Adds a binary annotation to the span.
+   *
+   * @param name The binary annotation's key.
+   * @param value The binary annotation's value.
+   */
+  void setTag(const std::string& name, const std::string& value);
 
-/* private: */
-/*   static const std::string EMPTY_HEX_STRING_; */
-/*   uint64_t trace_id_; */
-/*   std::string name_; */
-/*   uint64_t id_; */
-/*   Optional<uint64_t> parent_id_; */
-/*   bool debug_; */
-/*   std::vector<Annotation> annotations_; */
-/*   std::vector<BinaryAnnotation> binary_annotations_; */
-/*   Optional<int64_t> timestamp_; */
-/*   Optional<int64_t> duration_; */
-/*   Optional<uint64_t> trace_id_high_; */
-/*   int64_t monotonic_start_time_; */
-/*   TracerInterface* tracer_; */
-/* }; */
+private:
+  static const std::string EMPTY_HEX_STRING_;
+  uint64_t trace_id_;
+  std::string name_;
+  uint64_t id_;
+  Optional<uint64_t> parent_id_;
+  bool debug_;
+  std::vector<Annotation> annotations_;
+  std::vector<BinaryAnnotation> binary_annotations_;
+  Optional<int64_t> timestamp_;
+  Optional<int64_t> duration_;
+  Optional<uint64_t> trace_id_high_;
+  int64_t monotonic_start_time_;
+  TracerInterface* tracer_;
+};
 } // namespace zipkin
