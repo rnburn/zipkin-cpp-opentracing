@@ -4,23 +4,12 @@
 #include "span_context.h"
 /* #include "common/tracing/zipkin/util.h" */
 #include "zipkin_core_constants.h"
-/* #include "common/tracing/zipkin/zipkin_json_field_names.h" */
+#include "zipkin_json_field_names.h"
 
-/* #include "rapidjson/stringbuffer.h" */
-/* #include "rapidjson/writer.h" */
+#include <zipkin/rapidjson/stringbuffer.h>
+#include <zipkin/rapidjson/writer.h>
 
 namespace zipkin {
-Endpoint::Endpoint(const Endpoint& ep) {
-  service_name_ = ep.serviceName();
-  /* address_ = ep.address(); */
-}
-
-Endpoint& Endpoint::operator=(const Endpoint& ep) {
-  service_name_ = ep.serviceName();
-  /* address_ = ep.address(); */
-  return *this;
-}
-
 const std::string Endpoint::toJson() {
   return {};
   /* rapidjson::StringBuffer s; */

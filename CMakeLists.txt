@@ -4,6 +4,8 @@ enable_testing()
 project(zipkin-opentracing)
 set(CMAKE_CXX_STANDARD 11)
 
+include_directories(SYSTEM 3rd_party/include)
+
 add_library(zipkin src/zipkin_core_types.cc
                    src/utility.cc
                    src/hex.cc
@@ -11,4 +13,4 @@ add_library(zipkin src/zipkin_core_types.cc
                    src/address.cc
                    src/span_buffer.cc
                    src/span_context.cc)
-
+add_subdirectory(test)

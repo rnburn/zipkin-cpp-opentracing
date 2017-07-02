@@ -40,16 +40,6 @@ public:
 class Endpoint : public ZipkinBase {
 public:
   /**
-   * Copy constructor.
-   */
-  Endpoint(const Endpoint&);
-
-  /**
-   * Assignment operator.
-   */
-  Endpoint& operator=(const Endpoint&);
-
-  /**
    * Default constructor. Creates an empty Endpoint.
    */
   Endpoint() = default;
