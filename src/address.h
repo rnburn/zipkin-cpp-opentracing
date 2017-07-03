@@ -19,6 +19,8 @@ class IpAddress {
    uint32_t port() const { return port_; }
 
    const std::string& addressAsString() const { return friendly_address_; }
+
+   bool valid() const { return !friendly_address_.empty(); }
  private:
    IpVersion version_;
    uint32_t port_;

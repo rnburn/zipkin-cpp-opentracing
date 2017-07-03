@@ -9,6 +9,10 @@
 #include <climits>
 #include <random>
 
+#include <zipkin/rapidjson/document.h>
+#include <zipkin/rapidjson/stringbuffer.h>
+#include <zipkin/rapidjson/writer.h>
+
 namespace zipkin {
 uint64_t RandomUtil::generateId() {
   static thread_local std::mt19937_64 rand_source{std::random_device{}()};
@@ -193,5 +197,36 @@ bool StringUtil::startsWith(const char* source, const std::string& start, bool c
   } else {
     return strncasecmp(source, start.c_str(), start.size()) == 0;
   }
+}
+
+void JsonUtil::mergeJsons(std::string& target, const std::string& source,
+                      const std::string& field_name) {
+  rapidjson::Document target_doc, source_doc;
+  target_doc.Parse(target.c_str());
+  source_doc.Parse(source.c_str());
+
+  target_doc.AddMember(rapidjson::StringRef(field_name.c_str()), source_doc,
+                       target_doc.GetAllocator());
+
+  rapidjson::StringBuffer sb;
+  rapidjson::Writer<rapidjson::StringBuffer> w(sb);
+  target_doc.Accept(w);
+  target = sb.GetString();
+}
+
+void JsonUtil::addArrayToJson(std::string& target, const std::vector<std::string>& json_array,
+                          const std::string& field_name) {
+  std::string stringified_json_array = "[";
+
+  if (json_array.size() > 0) {
+    stringified_json_array += json_array[0];
+    for (auto it = json_array.begin() + 1; it != json_array.end(); it++) {
+      stringified_json_array += ",";
+      stringified_json_array += *it;
+    }
+  }
+  stringified_json_array += "]";
+
+  mergeJsons(target, stringified_json_array, field_name);
 }
 } // namespace zipkin
