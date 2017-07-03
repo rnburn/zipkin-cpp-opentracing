@@ -2,7 +2,6 @@
 
 #include "utility.h"
 #include "span_context.h"
-/* #include "common/tracing/zipkin/util.h" */
 #include "zipkin_core_constants.h"
 #include "zipkin_json_field_names.h"
 
