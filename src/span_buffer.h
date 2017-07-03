@@ -11,7 +11,8 @@ namespace zipkin {
 class SpanBuffer {
 public:
   /**
-   * Constructor that creates an empty buffer. Space needs to be allocated by invoking
+   * Constructor that creates an empty buffer. Space needs to be allocated by
+   * invoking
    * the method allocateBuffer(size).
    */
   SpanBuffer() {}
@@ -35,12 +36,14 @@ public:
    *
    * @param span The span to be added to the buffer.
    *
-   * @return true if the span was successfully added, or false if the buffer was full.
+   * @return true if the span was successfully added, or false if the buffer was
+   * full.
    */
-  bool addSpan(const Span& span);
+  bool addSpan(const Span &span);
 
   /**
-   * Empties the buffer. This method is supposed to be called when all buffered spans
+   * Empties the buffer. This method is supposed to be called when all buffered
+   * spans
    * have been sent to to the Zipkin service.
    */
   void clear() { span_buffer_.clear(); }

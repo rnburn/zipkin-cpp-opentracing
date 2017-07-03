@@ -4,8 +4,8 @@
 #include <cstdint>
 #include <sstream>
 #include <string>
-#include <vector>
 #include <strings.h>
+#include <vector>
 
 namespace zipkin {
 using SystemClock = std::chrono::system_clock;
@@ -14,23 +14,27 @@ using SystemTime = SystemClock::time_point;
 using SteadyTime = SteadyClock::time_point;
 
 class RandomUtil {
- public:
-   static uint64_t generateId();
+public:
+  static uint64_t generateId();
 };
 /* /** */
-/*  * Utility class for formatting dates given a strftime style format string. */
+/*  * Utility class for formatting dates given a strftime style format string.
+ */
 /*  *1/ */
 /* class DateFormatter { */
 /* public: */
-/*   DateFormatter(const std::string& format_string) : format_string_(format_string) {} */
+/*   DateFormatter(const std::string& format_string) :
+ * format_string_(format_string) {} */
 
 /*   /** */
-/*    * @return std::string representing the GMT/UTC time based on the input time. */
+/*    * @return std::string representing the GMT/UTC time based on the input
+ * time. */
 /*    *1/ */
 /*   std::string fromTime(const SystemTime& time); */
 
 /*   /** */
-/*    * @return std::string representing the current GMT/UTC time based on the format string. */
+/*    * @return std::string representing the current GMT/UTC time based on the
+ * format string. */
 /*    *1/ */
 /*   std::string now(); */
 
@@ -41,7 +45,8 @@ class RandomUtil {
 /* }; */
 
 /* /** */
-/*  * Utility class for access log date/time format with milliseconds support. */
+/*  * Utility class for access log date/time format with milliseconds support.
+ */
 /*  *1/ */
 /* class AccessLogDateTimeFormatter { */
 /* public: */
@@ -54,12 +59,14 @@ class RandomUtil {
 /* class DateUtil { */
 /* public: */
 /*   /** */
-/*    * @return whether a time_point contains a valid, not default constructed time. */
+/*    * @return whether a time_point contains a valid, not default constructed
+ * time. */
 /*    *1/ */
 /*   static bool timePointValid(SystemTime time_point); */
 
 /*   /** */
-/*    * @return whether a time_point contains a valid, not default constructed time. */
+/*    * @return whether a time_point contains a valid, not default constructed
+ * time. */
 /*    *1/ */
 /*   static bool timePointValid(MonotonicTime time_point); */
 /* }; */
@@ -73,7 +80,7 @@ public:
    * Convert a string to an unsigned long, checking for error.
    * @param return TRUE if successful, FALSE otherwise.
    */
-  static bool atoul(const char* str, uint64_t& out, int base = 10);
+  static bool atoul(const char *str, uint64_t &out, int base = 10);
 
   /**
    * Perform a case insensitive compare of 2 strings.
@@ -81,7 +88,7 @@ public:
    * @param rhs supplies string 2.
    * @return < 0, 0, > 0 depending on the comparison result.
    */
-  static int caseInsensitiveCompare(const char* lhs, const char* rhs) {
+  static int caseInsensitiveCompare(const char *lhs, const char *rhs) {
     return strcasecmp(lhs, rhs);
   }
 
@@ -92,50 +99,58 @@ public:
    * @param i supplies the number to convert.
    * @return the size of the string, not including the null termination.
    */
-  static uint32_t itoa(char* out, size_t out_len, uint64_t i);
+  static uint32_t itoa(char *out, size_t out_len, uint64_t i);
 
   /**
    * Trim trailing whitespace from a string in place.
    */
-  static void rtrim(std::string& source);
+  static void rtrim(std::string &source);
 
   /**
    * Size-bounded string copying and concatenation
    */
-  static size_t strlcpy(char* dst, const char* src, size_t size);
+  static size_t strlcpy(char *dst, const char *src, size_t size);
 
   /**
    * Split a string.
    * @param source supplies the string to split.
    * @param split supplies the string to split on.
-   * @param keep_empty_string result contains empty strings if the string starts or ends with
+   * @param keep_empty_string result contains empty strings if the string starts
+   * or ends with
    * 'split', or if instances of 'split' are adjacent.
-   * @return vector of strings computed after splitting `source` around all instances of `split`.
+   * @return vector of strings computed after splitting `source` around all
+   * instances of `split`.
    */
-  static std::vector<std::string> split(const std::string& source, const std::string& split,
+  static std::vector<std::string> split(const std::string &source,
+                                        const std::string &split,
                                         bool keep_empty_string = false);
 
   /**
    * Join elements of a vector into a string delimited by delimiter.
    * @param source supplies the strings to join.
    * @param delimiter supplies the delimiter to join them together.
-   * @return string combining elements of `source` with `delimiter` in between each element.
+   * @return string combining elements of `source` with `delimiter` in between
+   * each element.
    */
-  static std::string join(const std::vector<std::string>& source, const std::string& delimiter);
+  static std::string join(const std::vector<std::string> &source,
+                          const std::string &delimiter);
 
   /**
    * Split a string.
    * @param source supplies the string to split.
    * @param split supplies the char to split on.
-   * @return vector of strings computed after splitting `source` around all instances of `split`.
+   * @return vector of strings computed after splitting `source` around all
+   * instances of `split`.
    */
-  static std::vector<std::string> split(const std::string& source, char split);
+  static std::vector<std::string> split(const std::string &source, char split);
 
   /**
-   * Version of substr() that operates on a start and end index instead of a start index and a
+   * Version of substr() that operates on a start and end index instead of a
+   * start index and a
    * length.
    */
-  static std::string subspan(const std::string& source, size_t start, size_t end);
+  static std::string subspan(const std::string &source, size_t start,
+                             size_t end);
 
   /**
    * Escape strings for logging purposes. Returns a copy of the string with
@@ -143,18 +158,19 @@ public:
    * @param source supplies the string to escape.
    * @return escaped string.
    */
-  static std::string escape(const std::string& source);
+  static std::string escape(const std::string &source);
 
   /**
    * @return true if @param source ends with @param end.
    */
-  static bool endsWith(const std::string& source, const std::string& end);
+  static bool endsWith(const std::string &source, const std::string &end);
 
   /**
    * @param case_sensitive determines if the compare is case sensitive
    * @return true if @param source starts with @param start and ignores cases.
    */
-  static bool startsWith(const char* source, const std::string& start, bool case_sensitive = true);
+  static bool startsWith(const char *source, const std::string &start,
+                         bool case_sensitive = true);
 };
 
 /**
@@ -171,20 +187,24 @@ public:
    *
    * @param target It will contain the resulting stringified JSON.
    * @param source The stringified JSON that will be added to target.
-   * @param field_name The key name (added to target's JSON) whose value will be the JSON in source.
+   * @param field_name The key name (added to target's JSON) whose value will be
+   * the JSON in source.
    */
-  static void mergeJsons(std::string& target, const std::string& source,
-                         const std::string& field_name);
+  static void mergeJsons(std::string &target, const std::string &source,
+                         const std::string &field_name);
 
   /**
    * Merges a stringified JSON and a vector of stringified JSONs.
    *
    * @param target It will contain the resulting stringified JSON.
-   * @param json_array Vector of strings, where each element is a stringified JSON.
-   * @param field_name The key name (added to target's JSON) whose value will be a stringified.
+   * @param json_array Vector of strings, where each element is a stringified
+   * JSON.
+   * @param field_name The key name (added to target's JSON) whose value will be
+   * a stringified.
    * JSON array derived from json_array.
    */
-  static void addArrayToJson(std::string& target, const std::vector<std::string>& json_array,
-                             const std::string& field_name);
+  static void addArrayToJson(std::string &target,
+                             const std::vector<std::string> &json_array,
+                             const std::string &field_name);
 };
 } // namespace zipkin
