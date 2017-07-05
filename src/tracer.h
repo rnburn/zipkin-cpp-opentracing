@@ -54,8 +54,6 @@ public:
   * Tracer.
   * @param address Pointer to a network-address object. The IP address and port
   * are used in all annotations' endpoints of the spans created by the Tracer.
-  * @param random_generator Reference to the random-number generator to be used
-  * by the Tracer.
   */
  Tracer(const std::string &service_name, const IpAddress &address)
      : service_name_(service_name), address_(address), reporter_(nullptr) {}

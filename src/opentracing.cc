@@ -1,5 +1,9 @@
 #include <zipkin/opentracing.h>
 
+#include "tracer.h"
+#include "zipkin_http_transporter.h"
+#include "zipkin_reporter_impl.h"
+
 using opentracing::StringRef;
 using opentracing::Value;
 using opentracing::Expected;
@@ -33,8 +37,11 @@ class OtSpan : public ot::Span {
   const ot::Tracer& tracer() const noexcept override {}
 };
 
-class OtTracer : public ot::Tracer {
+class OtTracer : public ot::Tracer,
+                 public std::enable_shared_from_this<OtTracer> {
  public:
+  explicit OtTracer(TracerPtr&& tracer) : tracer_{std::move(tracer)} {}
+
   std::unique_ptr<ot::Span> StartSpanWithOptions(
       StringRef operation_name, const ot::StartSpanOptions& options) const
       noexcept override {
@@ -72,10 +79,13 @@ class OtTracer : public ot::Tracer {
   }
 
   void Close() noexcept override {}
+ private:
+  TracerPtr tracer_;
 };
 
 std::shared_ptr<ot::Tracer> makeZipkinTracer(
     const ZipkinTracerOptions& options) {
+  /* Tracer tracer{tracer.service_name */
   return nullptr;
 }
 }  // namespace zipkin

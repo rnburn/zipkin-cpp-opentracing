@@ -10,7 +10,7 @@
 
 namespace zipkin {
 /**
- * This class derives from the abstract Zipkin::Reporter. It buffers spans and
+ * This class derives from the abstract zipkin::Reporter. It buffers spans and
  * relies on a Transporter to send spans to Zipkin.
  *
  * Up to `???` will be buffered. Spans are flushed
@@ -34,7 +34,7 @@ public:
     ~ReporterImpl();
 
   /**
-   * Implementation of Zipkin::Reporter::reportSpan().
+   * Implementation of zipkin::Reporter::reportSpan().
    *
    * Buffers the given span and calls flushSpans() if the buffer is full.
    *
