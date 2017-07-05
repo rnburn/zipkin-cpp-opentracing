@@ -14,6 +14,7 @@ add_library(zipkin src/zipkin_core_types.cc
                    src/address.cc
                    src/span_buffer.cc
                    src/span_context.cc
+                   src/zipkin_reporter_impl.cc
                    src/opentracing.cc)
 
 add_subdirectory(test)

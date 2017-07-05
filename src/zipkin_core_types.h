@@ -9,10 +9,6 @@
 #include "optional.h"
 #include "tracer_interface.h"
 
-/* #include "common/common/hex.h" */
-/* #include "common/tracing/zipkin/tracer_interface.h" */
-/* #include "common/tracing/zipkin/util.h" */
-
 namespace zipkin {
 
 /**
