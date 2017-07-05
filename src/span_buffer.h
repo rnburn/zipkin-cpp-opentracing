@@ -12,8 +12,7 @@ class SpanBuffer {
 public:
   /**
    * Constructor that creates an empty buffer. Space needs to be allocated by
-   * invoking
-   * the method allocateBuffer(size).
+   * invoking the method allocateBuffer(size).
    */
   SpanBuffer() {}
 
@@ -43,10 +42,14 @@ public:
 
   /**
    * Empties the buffer. This method is supposed to be called when all buffered
-   * spans
-   * have been sent to to the Zipkin service.
+   * spans have been sent to to the Zipkin service.
    */
   void clear() { span_buffer_.clear(); }
+
+  /**
+   * Swaps buffers.
+   */
+  void swap(SpanBuffer& other) { span_buffer_.swap(other.span_buffer_); }
 
   /**
    * @return the number of spans currently buffered.

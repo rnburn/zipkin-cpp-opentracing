@@ -39,7 +39,7 @@ bool ReporterImpl::waitUntilNextReport(const SteadyTime& due_time) {
      write_cond_.wait_until(lock, due_time,
                             [this] { return this->write_exit_; });
      if (!write_exit_) {
-       std::swap(inflight_spans_, spans_);
+       inflight_spans_.swap(spans_);
      }
      return !write_exit_;
 }
