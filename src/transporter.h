@@ -5,10 +5,10 @@
 namespace zipkin {
 /**
  * Abstract class that delegates to users of the Tracer class the responsibility
- * of "transporting" Zipkin spans that have ended its life cycle. 
+ * of "transporting" Zipkin spans that have ended its life cycle.
  */
 class Transporter {
- public:
+public:
   /**
    * Destructor.
    */
@@ -20,7 +20,7 @@ class Transporter {
    *
    * @param spans The SpanBuffer that needs action.
    */
-  virtual void transportSpans(SpanBuffer& spans) = 0;
+  virtual void transportSpans(SpanBuffer &spans) = 0;
 };
 
 typedef std::unique_ptr<Transporter> TransporterPtr;

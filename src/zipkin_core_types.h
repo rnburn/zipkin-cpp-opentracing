@@ -4,10 +4,10 @@
 #include <string>
 #include <vector>
 
-#include <zipkin/ip_address.h>
 #include "hex.h"
 #include "optional.h"
 #include "tracer_interface.h"
+#include <zipkin/ip_address.h>
 
 namespace zipkin {
 

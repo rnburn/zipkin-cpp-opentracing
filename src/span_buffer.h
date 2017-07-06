@@ -49,7 +49,7 @@ public:
   /**
    * Swaps buffers.
    */
-  void swap(SpanBuffer& other) { span_buffer_.swap(other.span_buffer_); }
+  void swap(SpanBuffer &other) { span_buffer_.swap(other.span_buffer_); }
 
   /**
    * @return the number of spans currently buffered.

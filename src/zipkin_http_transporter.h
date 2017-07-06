@@ -10,37 +10,27 @@ namespace zipkin {
  * environment.
  */
 class CurlEnvironment {
- public:
-  CurlEnvironment() {
-      curl_global_init(CURL_GLOBAL_ALL);
-  }
+public:
+  CurlEnvironment() { curl_global_init(CURL_GLOBAL_ALL); }
 
-  ~CurlEnvironment() {
-      curl_global_cleanup();
-  }
+  ~CurlEnvironment() { curl_global_cleanup(); }
 };
 
 /**
  * RAII class to manage the allocation/deallocation of a CURL handle.
  */
 class CurlHandle {
-  public:
-    CurlHandle() {
-      handle_ = curl_easy_init();
-    }
+public:
+  CurlHandle() { handle_ = curl_easy_init(); }
 
-    ~CurlHandle() {
-      curl_easy_cleanup(handle_);
-    }
+  ~CurlHandle() { curl_easy_cleanup(handle_); }
 
-    operator CURL*() { return handle_; }
+  operator CURL *() { return handle_; }
 
-    CURL* operator->() {
-      return handle_;
-    }
+  CURL *operator->() { return handle_; }
 
-   private:
-    CURL* handle_;
+private:
+  CURL *handle_;
 };
 
 /**
@@ -48,24 +38,25 @@ class CurlHandle {
  * a zipkin collector via http.
  */
 class ZipkinHttpTransporter : public Transporter {
- public:
+public:
   /**
    * Constructor.
    */
-  ZipkinHttpTransporter(const char* collector_host, uint32_t collector_port);
+  ZipkinHttpTransporter(const char *collector_host, uint32_t collector_port);
 
   /**
    * Destructor.
    */
   ~ZipkinHttpTransporter();
-  
+
   /**
    * Implementation of zipkin::Transporter::transportSpans().
    *
    * @param spans The spans to be transported.
    */
-  void transportSpans(SpanBuffer& spans) override;
- private:
+  void transportSpans(SpanBuffer &spans) override;
+
+private:
   CurlEnvironment curl_environment_;
   CurlHandle handle_;
 };

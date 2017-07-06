@@ -1,9 +1,9 @@
 #pragma once
 
-#include <thread>
+#include <condition_variable>
 #include <memory>
 #include <mutex>
-#include <condition_variable>
+#include <thread>
 
 #include "tracer.h"
 #include "transporter.h"
@@ -26,12 +26,12 @@ public:
    *
    * @param transporter The Transporter to be associated with the reporter.
    */
-  explicit ReporterImpl(TransporterPtr&& transporter);
+  explicit ReporterImpl(TransporterPtr &&transporter);
 
   /**
    * Destructor.
    */
-    ~ReporterImpl();
+  ~ReporterImpl();
 
   /**
    * Implementation of zipkin::Reporter::reportSpan().
@@ -40,20 +40,20 @@ public:
    *
    * @param span The span to be buffered.
    */
-  void reportSpan(const Span& span) override;
+  void reportSpan(const Span &span) override;
 
- private:
+private:
   TransporterPtr transporter_;
 
-   std::mutex write_mutex_;
-   std::condition_variable write_cond_;
-   bool write_exit_ = false;
-   std::thread writer_;
-   SpanBuffer spans_;
-   SpanBuffer inflight_spans_;
+  std::mutex write_mutex_;
+  std::condition_variable write_cond_;
+  bool write_exit_ = false;
+  std::thread writer_;
+  SpanBuffer spans_;
+  SpanBuffer inflight_spans_;
 
-   void makeWriterExit();
-   bool waitUntilNextReport(const SteadyTime& due_time);
-   void writeReports();
+  void makeWriterExit();
+  bool waitUntilNextReport(const SteadyTime &due_time);
+  void writeReports();
 };
 } // namespace zipkin

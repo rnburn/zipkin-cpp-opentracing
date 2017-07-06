@@ -5,7 +5,7 @@
 #include "zipkin_reporter_impl.h"
 #include "zipkin_core_types.h"
 
-using opentracing::StringRef;
+using opentracing::string_view;
 using opentracing::Value;
 using opentracing::Expected;
 using opentracing::make_unexpected;
@@ -30,21 +30,21 @@ class OtSpan : public ot::Span {
     span_->finish();
   }
 
-  void SetOperationName(StringRef name) noexcept override {
+  void SetOperationName(string_view name) noexcept override {
     span_->setName(name);
   }
 
-  void SetTag(StringRef restricted_key, const Value& value) noexcept override {
+  void SetTag(string_view restricted_key, const Value& value) noexcept override {
   }
 
-  void SetBaggageItem(StringRef restricted_key,
-                      StringRef value) noexcept override {}
+  void SetBaggageItem(string_view restricted_key,
+                      string_view value) noexcept override {}
 
-  std::string BaggageItem(StringRef restricted_key) const noexcept override {
+  std::string BaggageItem(string_view restricted_key) const noexcept override {
     return {};
   }
 
-  void Log(std::initializer_list<std::pair<StringRef, Value>>
+  void Log(std::initializer_list<std::pair<string_view, Value>>
                fields) noexcept override {}
 
   const ot::SpanContext& context() const noexcept override {}
@@ -62,7 +62,7 @@ class OtTracer : public ot::Tracer,
   explicit OtTracer(TracerPtr&& tracer) : tracer_{std::move(tracer)} {}
 
   std::unique_ptr<ot::Span> StartSpanWithOptions(
-      StringRef operation_name, const ot::StartSpanOptions& options) const
+      string_view operation_name, const ot::StartSpanOptions& options) const
       noexcept override {
     auto span =
         tracer_->startSpan(operation_name, options.start_system_timestamp);
