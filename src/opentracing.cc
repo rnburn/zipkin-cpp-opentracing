@@ -7,7 +7,7 @@
 
 using opentracing::string_view;
 using opentracing::Value;
-using opentracing::Expected;
+using opentracing::expected;
 using opentracing::make_unexpected;
 
 namespace ot = opentracing;
@@ -71,32 +71,32 @@ class OtTracer : public ot::Tracer,
         new OtSpan{shared_from_this(), std::move(span)}};
   }
 
-  Expected<void> Inject(const ot::SpanContext& sc,
+  expected<void> Inject(const ot::SpanContext& sc,
                         std::ostream& writer) const override {
     return {};
   }
 
-  Expected<void> Inject(const ot::SpanContext& sc,
+  expected<void> Inject(const ot::SpanContext& sc,
                         const ot::TextMapWriter& writer) const override {
     return {};
   }
 
-  Expected<void> Inject(const ot::SpanContext& sc,
+  expected<void> Inject(const ot::SpanContext& sc,
                         const ot::HTTPHeadersWriter& writer) const override {
     return {};
   }
 
-  Expected<std::unique_ptr<ot::SpanContext>> Extract(
+  expected<std::unique_ptr<ot::SpanContext>> Extract(
       std::istream& reader) const override {
     return std::unique_ptr<ot::SpanContext>{};
   }
 
-  Expected<std::unique_ptr<ot::SpanContext>> Extract(
+  expected<std::unique_ptr<ot::SpanContext>> Extract(
       const ot::TextMapReader& reader) const override {
     return std::unique_ptr<ot::SpanContext>{};
   }
 
-  Expected<std::unique_ptr<ot::SpanContext>> Extract(
+  expected<std::unique_ptr<ot::SpanContext>> Extract(
       const ot::HTTPHeadersReader& reader) const override {
     return std::unique_ptr<ot::SpanContext>{};
   }

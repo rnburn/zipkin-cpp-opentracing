@@ -205,7 +205,7 @@ void JsonUtil::mergeJsons(std::string& target, const std::string& source,
   target_doc.Parse(target.c_str());
   source_doc.Parse(source.c_str());
 
-  target_doc.AddMember(rapidjson::string_view(field_name.c_str()), source_doc,
+  target_doc.AddMember(rapidjson::StringRef(field_name.c_str()), source_doc,
                        target_doc.GetAllocator());
 
   rapidjson::StringBuffer sb;
