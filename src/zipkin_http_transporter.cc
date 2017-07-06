@@ -36,7 +36,18 @@ ZipkinHttpTransporter::ZipkinHttpTransporter(const char* collector_host,
 ZipkinHttpTransporter::~ZipkinHttpTransporter() {
 }
 
-void ZipkinHttpTransporter::transportSpans(SpanBuffer& spans) {
-  std::cout << spans.toStringifiedJsonArray() << "\n";
+void ZipkinHttpTransporter::transportSpans(SpanBuffer& spans) try {
+  auto data = spans.toStringifiedJsonArray();
+  auto rcode = curl_easy_setopt(handle_, CURLOPT_POSTFIELDS, data.c_str());
+  if (rcode != CURLE_OK) {
+    std::cerr << curl_easy_strerror(rcode) << '\n';
+    return;
+  }
+  rcode = curl_easy_perform(handle_);
+  if (rcode != CURLE_OK) {
+    std::cerr << error_buffer_ << '\n';
+  }
+} catch(const std::bad_alloc&) {
+  // Drop spans
 }
 } // namespace zipkin

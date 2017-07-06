@@ -4,7 +4,7 @@
 namespace zipkin {
 struct ZipkinTracerOptions {
   std::string collector_host;
-  uint32_t collector_port;
+  uint32_t collector_port = 9411;
 
   std::string service_name;
   IpAddress service_address;

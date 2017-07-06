@@ -9,14 +9,15 @@ namespace zipkin {
 /** Exception class used for CURL errors.
  */
 class CurlError : public std::exception {
- public:
-   CurlError(CURLcode code) : code_{code} {}
+public:
+  CurlError(CURLcode code) : code_{code} {}
 
-   const char* what() const noexcept override { 
-     return curl_easy_strerror(code_);
-   }
- private:
-   CURLcode code_;
+  const char *what() const noexcept override {
+    return curl_easy_strerror(code_);
+  }
+
+private:
+  CURLcode code_;
 };
 
 /**
@@ -51,7 +52,7 @@ private:
  * RAII class to manage the allocation/deallocation of a CURL SList
  */
 class CurlSList {
- public:
+public:
   ~CurlSList() {
     if (list_) {
       curl_slist_free_all(list_);
@@ -60,14 +61,15 @@ class CurlSList {
 
   operator curl_slist *() { return list_; }
 
-  void append(const char* s) {
+  void append(const char *s) {
     auto list_new = curl_slist_append(list_, s);
     if (!list_new)
       throw std::bad_alloc{};
     list_ = list_new;
   }
- private:
-  curl_slist* list_ = nullptr;
+
+private:
+  curl_slist *list_ = nullptr;
 };
 
 /**
