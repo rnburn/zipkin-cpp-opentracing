@@ -15,15 +15,21 @@ namespace ot = opentracing;
 namespace zipkin {
 class OtSpanContext : public ot::SpanContext {
  public:
+  explicit OtSpanContext(zipkin::SpanContext&& span_context_)
+      : span_context{std::move(span_context_)} {}
+
   void ForeachBaggageItem(
       std::function<bool(const std::string&, const std::string&)> f)
       const override {}
+  zipkin::SpanContext span_context;
 };
 
 class OtSpan : public ot::Span {
  public:
   OtSpan(std::shared_ptr<const ot::Tracer>&& tracer, SpanPtr&& span)
-      : tracer_{std::move(tracer)}, span_{std::move(span)} {}
+      : tracer_{std::move(tracer)},
+        span_{std::move(span)},
+        span_context_{zipkin::SpanContext{*span_}} {}
 
   void FinishWithOptions(
       const ot::FinishSpanOptions& options) noexcept override {
@@ -34,8 +40,8 @@ class OtSpan : public ot::Span {
     span_->setName(name);
   }
 
-  void SetTag(string_view restricted_key, const Value& value) noexcept override {
-  }
+  void SetTag(string_view restricted_key,
+              const Value& value) noexcept override {}
 
   void SetBaggageItem(string_view restricted_key,
                       string_view value) noexcept override {}
@@ -47,13 +53,16 @@ class OtSpan : public ot::Span {
   void Log(std::initializer_list<std::pair<string_view, Value>>
                fields) noexcept override {}
 
-  const ot::SpanContext& context() const noexcept override {}
+  const ot::SpanContext& context() const noexcept override {
+    return span_context_;
+  }
 
   const ot::Tracer& tracer() const noexcept override { return *tracer_; }
 
  private:
   std::shared_ptr<const ot::Tracer> tracer_;
   SpanPtr span_;
+  OtSpanContext span_context_;
 };
 
 class OtTracer : public ot::Tracer,
