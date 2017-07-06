@@ -20,7 +20,7 @@ class Transporter {
    *
    * @param spans The SpanBuffer that needs action.
    */
-  virtual void transportSpans(const SpanBuffer& spans) = 0;
+  virtual void transportSpans(SpanBuffer& spans) = 0;
 };
 
 typedef std::unique_ptr<Transporter> TransporterPtr;

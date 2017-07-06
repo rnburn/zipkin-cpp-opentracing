@@ -3,6 +3,7 @@
 #include "tracer.h"
 #include "zipkin_http_transporter.h"
 #include "zipkin_reporter_impl.h"
+#include "zipkin_core_types.h"
 
 using opentracing::StringRef;
 using opentracing::Value;
@@ -21,20 +22,38 @@ class OtSpanContext : public ot::SpanContext {
 
 class OtSpan : public ot::Span {
  public:
-  void FinishWithOptions(
-      const ot::FinishSpanOptions& options) noexcept override {}
+  OtSpan(std::shared_ptr<const ot::Tracer>&& tracer, SpanPtr&& span)
+      : tracer_{std::move(tracer)}, span_{std::move(span)} {}
 
-  void SetOperationName(StringRef name) noexcept override {}
+  void FinishWithOptions(
+      const ot::FinishSpanOptions& options) noexcept override {
+    span_->finish();
+  }
+
+  void SetOperationName(StringRef name) noexcept override {
+    span_->setName(name);
+  }
+
+  void SetTag(StringRef restricted_key, const Value& value) noexcept override {
+  }
 
   void SetBaggageItem(StringRef restricted_key,
                       StringRef value) noexcept override {}
+
+  std::string BaggageItem(StringRef restricted_key) const noexcept override {
+    return {};
+  }
 
   void Log(std::initializer_list<std::pair<StringRef, Value>>
                fields) noexcept override {}
 
   const ot::SpanContext& context() const noexcept override {}
 
-  const ot::Tracer& tracer() const noexcept override {}
+  const ot::Tracer& tracer() const noexcept override { return *tracer_; }
+
+ private:
+  std::shared_ptr<const ot::Tracer> tracer_;
+  SpanPtr span_;
 };
 
 class OtTracer : public ot::Tracer,
@@ -45,7 +64,11 @@ class OtTracer : public ot::Tracer,
   std::unique_ptr<ot::Span> StartSpanWithOptions(
       StringRef operation_name, const ot::StartSpanOptions& options) const
       noexcept override {
-    return nullptr;
+    auto span =
+        tracer_->startSpan(operation_name, options.start_system_timestamp);
+    span->setTracer(tracer_.get());
+    return std::unique_ptr<ot::Span>{
+        new OtSpan{shared_from_this(), std::move(span)}};
   }
 
   Expected<void> Inject(const ot::SpanContext& sc,
@@ -85,7 +108,11 @@ class OtTracer : public ot::Tracer,
 
 std::shared_ptr<ot::Tracer> makeZipkinTracer(
     const ZipkinTracerOptions& options) {
-  /* Tracer tracer{tracer.service_name */
-  return nullptr;
+  TracerPtr tracer{new Tracer{options.service_name, options.service_address}};
+  TransporterPtr transporter{new ZipkinHttpTransporter{
+      options.collector_host.c_str(), options.collector_port}};
+  ReporterPtr reporter{new ReporterImpl{std::move(transporter)}};
+  tracer->setReporter(std::move(reporter));
+  return std::shared_ptr<ot::Tracer>{new OtTracer{std::move(tracer)}};
 }
 }  // namespace zipkin

@@ -64,7 +64,7 @@ class ZipkinHttpTransporter : public Transporter {
    *
    * @param spans The spans to be transported.
    */
-  void transportSpans(const SpanBuffer& spans) override;
+  void transportSpans(SpanBuffer& spans) override;
  private:
   CurlEnvironment curl_environment_;
   CurlHandle handle_;

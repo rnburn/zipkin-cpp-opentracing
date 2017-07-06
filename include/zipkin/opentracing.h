@@ -1,4 +1,5 @@
 #include <opentracing/tracer.h>
+#include <zipkin/ip_address.h>
 
 namespace zipkin {
 struct ZipkinTracerOptions {
@@ -6,8 +7,7 @@ struct ZipkinTracerOptions {
   uint32_t collector_port;
 
   std::string service_name;
-  std::string service_address;
-  uint32_t service_port;
+  IpAddress service_address;
 };
 
 std::shared_ptr<opentracing::Tracer>

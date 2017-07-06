@@ -1,4 +1,4 @@
-#include "address.h"
+#include <zipkin/ip_address.h>
 #include <arpa/inet.h>
 #include <cstring>
 #include <string>
