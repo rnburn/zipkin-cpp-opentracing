@@ -3,8 +3,22 @@
 #include "transporter.h"
 
 #include <curl/curl.h>
+#include <exception>
 
 namespace zipkin {
+/** Exception class used for CURL errors.
+ */
+class CurlError : public std::exception {
+ public:
+   CurlError(CURLcode code) : code_{code} {}
+
+   const char* what() const noexcept override { 
+     return curl_easy_strerror(code_);
+   }
+ private:
+   CURLcode code_;
+};
+
 /**
  * RAII class to manage the initialization/deinitialization of the CURL
  * environment.
@@ -34,6 +48,29 @@ private:
 };
 
 /**
+ * RAII class to manage the allocation/deallocation of a CURL SList
+ */
+class CurlSList {
+ public:
+  ~CurlSList() {
+    if (list_) {
+      curl_slist_free_all(list_);
+    }
+  }
+
+  operator curl_slist *() { return list_; }
+
+  void append(const char* s) {
+    auto list_new = curl_slist_append(list_, s);
+    if (!list_new)
+      throw std::bad_alloc{};
+    list_ = list_new;
+  }
+ private:
+  curl_slist* list_ = nullptr;
+};
+
+/**
  * This class derives from the abstract zipkin::Transporter. It sends spans to
  * a zipkin collector via http.
  */
@@ -41,6 +78,8 @@ class ZipkinHttpTransporter : public Transporter {
 public:
   /**
    * Constructor.
+   *
+   * Throws CurlError if the handle can't be initialized.
    */
   ZipkinHttpTransporter(const char *collector_host, uint32_t collector_port);
 
@@ -59,5 +98,7 @@ public:
 private:
   CurlEnvironment curl_environment_;
   CurlHandle handle_;
+  CurlSList headers_;
+  char error_buffer_[CURL_ERROR_SIZE];
 };
 } // namesapce zipkin
