@@ -5,7 +5,8 @@
 
 namespace zipkin {
 /**
- * Hex encoder/decoder. Produces lowercase hex digits. Can consume either lowercase or uppercase
+ * Hex encoder/decoder. Produces lowercase hex digits. Can consume either
+ * lowercase or uppercase
  * digits.
  */
 class Hex final {
@@ -15,7 +16,7 @@ public:
    * @param data the binary data to convert
    * @return the hex encoded string representing data
    */
-  static std::string encode(const std::vector<uint8_t>& data) {
+  static std::string encode(const std::vector<uint8_t> &data) {
     return encode(&data[0], data.size());
   }
 
@@ -25,7 +26,7 @@ public:
    * @param length the length of the data
    * @return the hex encoded string representing data
    */
-  static std::string encode(const uint8_t* data, size_t length);
+  static std::string encode(const uint8_t *data, size_t length);
 
   /**
    * Converts a hex dump to binary data
