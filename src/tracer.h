@@ -76,7 +76,7 @@ public:
    * created.
    */
   SpanPtr startSpan(const std::string &span_name, SystemTime timestamp,
-                    SpanContext &previous_context);
+                    const SpanContext &previous_context);
 
   /**
    * TracerInterface::reportSpan.

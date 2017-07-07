@@ -29,7 +29,9 @@ SpanPtr Tracer::startSpan(const std::string& span_name, SystemTime timestamp) {
 
   // Set the timestamp globally for the span and also for the CS annotation
   uint64_t timestamp_micro =
-      std::chrono::duration_cast<std::chrono::microseconds>(timestamp.time_since_epoch()).count();
+      std::chrono::duration_cast<std::chrono::microseconds>(
+          timestamp.time_since_epoch())
+          .count();
   cs.setTimestamp(timestamp_micro);
   span_ptr->setTimestamp(timestamp_micro);
 
@@ -42,7 +44,7 @@ SpanPtr Tracer::startSpan(const std::string& span_name, SystemTime timestamp) {
 }
 
 SpanPtr Tracer::startSpan(const std::string& span_name, SystemTime timestamp,
-                          SpanContext& previous_context) {
+                          const SpanContext& previous_context) {
   SpanPtr span_ptr(new Span());
   Annotation annotation;
   uint64_t timestamp_micro;

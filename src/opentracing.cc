@@ -65,6 +65,18 @@ class OtSpan : public ot::Span {
   OtSpanContext span_context_;
 };
 
+const OtSpanContext* find_span_context(
+    const std::vector<std::pair<ot::SpanReferenceType, const ot::SpanContext*>>&
+        references) {
+  for (auto& reference : references) {
+    if (auto span_context =
+            dynamic_cast<const OtSpanContext*>(reference.second)) {
+      return span_context;
+    }
+  }
+  return nullptr;
+}
+
 class OtTracer : public ot::Tracer,
                  public std::enable_shared_from_this<OtTracer> {
  public:
@@ -73,8 +85,14 @@ class OtTracer : public ot::Tracer,
   std::unique_ptr<ot::Span> StartSpanWithOptions(
       string_view operation_name, const ot::StartSpanOptions& options) const
       noexcept override {
-    auto span =
+    SpanPtr span;
+    if (auto parent_span_context = find_span_context(options.references)) {
+      span = tracer_->startSpan(operation_name, options.start_system_timestamp,
+                                parent_span_context->span_context);
+    } else {
+      span = 
         tracer_->startSpan(operation_name, options.start_system_timestamp);
+    }
     span->setTracer(tracer_.get());
     return std::unique_ptr<ot::Span>{
         new OtSpan{shared_from_this(), std::move(span)}};
