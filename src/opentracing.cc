@@ -1,6 +1,7 @@
 #include <zipkin/opentracing.h>
 
 #include "tracer.h"
+#include "utility.h"
 #include "zipkin_core_types.h"
 #include "zipkin_http_transporter.h"
 #include "zipkin_reporter_impl.h"
@@ -13,8 +14,31 @@ using opentracing::make_unexpected;
 namespace ot = opentracing;
 
 namespace zipkin {
+static std::tuple<SystemTime, SteadyTime>
+computeStartTimestamps(const SystemTime &start_system_timestamp,
+                       const SteadyTime &start_steady_timestamp) {
+  // If neither the system nor steady timestamps are set, get the tme from the
+  // respective clocks; otherwise, use the set timestamp to initialize the
+  // other.
+  if (start_system_timestamp == SystemTime() &&
+      start_steady_timestamp == SteadyTime()) {
+    return {SystemClock::now(), SteadyClock::now()};
+  }
+  if (start_system_timestamp == SystemTime()) {
+    return {ot::convert_time_point<SystemClock>(start_steady_timestamp),
+            start_steady_timestamp};
+  }
+  if (start_steady_timestamp == SteadyTime()) {
+    return {start_system_timestamp,
+            ot::convert_time_point<SteadyClock>(start_system_timestamp)};
+  }
+  return {start_system_timestamp, start_steady_timestamp};
+}
+
 class OtSpanContext : public ot::SpanContext {
 public:
+  OtSpanContext() = default;
+
   explicit OtSpanContext(zipkin::SpanContext &&span_context_)
       : span_context{std::move(span_context_)} {}
 
@@ -24,14 +48,56 @@ public:
   zipkin::SpanContext span_context;
 };
 
+static const OtSpanContext *findSpanContext(
+    const std::vector<std::pair<ot::SpanReferenceType, const ot::SpanContext *>>
+        &references) {
+  for (auto &reference : references) {
+    if (auto span_context =
+            dynamic_cast<const OtSpanContext *>(reference.second)) {
+      return span_context;
+    }
+  }
+  return nullptr;
+}
+
 class OtSpan : public ot::Span {
 public:
-  OtSpan(std::shared_ptr<const ot::Tracer> &&tracer, SpanPtr &&span)
-      : tracer_{std::move(tracer)}, span_{std::move(span)},
-        span_context_{zipkin::SpanContext{*span_}} {}
+  OtSpan(std::shared_ptr<const ot::Tracer> &&tracer_owner, SpanPtr &&span_owner,
+         const ot::StartSpanOptions &options)
+      : tracer_{std::move(tracer_owner)}, span_{std::move(span_owner)} {
+    // Set IDs.
+    span_->setId(RandomUtil::generateId());
+    if (auto parent_span_context = findSpanContext(options.references)) {
+      span_->setTraceId(parent_span_context->span_context.trace_id());
+      span_->setParentId(parent_span_context->span_context.id());
+    } else {
+      span_->setTraceId(RandomUtil::generateId());
+    }
+
+    // Set timestamp.
+    SystemTime start_system_timestamp;
+    std::tie(start_system_timestamp, start_steady_timestamp_) =
+        computeStartTimestamps(options.start_system_timestamp,
+                               options.start_steady_timestamp);
+    span_->setTimestamp(std::chrono::duration_cast<std::chrono::microseconds>(
+                            start_system_timestamp.time_since_epoch())
+                            .count());
+
+    // Set context.
+    span_context_ = OtSpanContext{zipkin::SpanContext{*span_}};
+  }
 
   void
   FinishWithOptions(const ot::FinishSpanOptions &options) noexcept override {
+    auto finish_timestamp = options.finish_steady_timestamp;
+    if (finish_timestamp == SteadyTime()) {
+      finish_timestamp = SteadyClock::now();
+    }
+    auto duration = finish_timestamp - start_steady_timestamp_;
+    span_->setDuration(
+        std::chrono::duration_cast<std::chrono::microseconds>(duration)
+            .count());
+
     span_->finish();
   }
 
@@ -62,19 +128,8 @@ private:
   std::shared_ptr<const ot::Tracer> tracer_;
   SpanPtr span_;
   OtSpanContext span_context_;
+  SteadyTime start_steady_timestamp_;
 };
-
-const OtSpanContext *find_span_context(
-    const std::vector<std::pair<ot::SpanReferenceType, const ot::SpanContext *>>
-        &references) {
-  for (auto &reference : references) {
-    if (auto span_context =
-            dynamic_cast<const OtSpanContext *>(reference.second)) {
-      return span_context;
-    }
-  }
-  return nullptr;
-}
 
 class OtTracer : public ot::Tracer,
                  public std::enable_shared_from_this<OtTracer> {
@@ -85,15 +140,19 @@ public:
   StartSpanWithOptions(string_view operation_name,
                        const ot::StartSpanOptions &options) const
       noexcept override {
-    auto span =
-        tracer_->startSpan(operation_name, options.start_system_timestamp);
+    // Create the core zipkin span.
+    SpanPtr span{new zipkin::Span{}};
+    span->setName(operation_name);
     span->setTracer(tracer_.get());
-    if (auto parent_span_context = find_span_context(options.references)) {
-      span->setTraceId(parent_span_context->span_context.trace_id());
-      span->setParentId(parent_span_context->span_context.id());
-    }
+
+    // Add a binary annotation for the serviceName.
+    BinaryAnnotation service_name_annotation{"lc", tracer_->serviceName()};
+    service_name_annotation.setEndpoint(
+        Endpoint{tracer_->serviceName(), tracer_->address()});
+    span->addBinaryAnnotation(std::move(service_name_annotation));
+
     return std::unique_ptr<ot::Span>{
-        new OtSpan{shared_from_this(), std::move(span)}};
+        new OtSpan{shared_from_this(), std::move(span), options}};
   }
 
   expected<void> Inject(const ot::SpanContext &sc,
