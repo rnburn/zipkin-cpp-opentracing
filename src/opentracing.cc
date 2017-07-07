@@ -85,14 +85,13 @@ public:
   StartSpanWithOptions(string_view operation_name,
                        const ot::StartSpanOptions &options) const
       noexcept override {
-    SpanPtr span;
-    if (auto parent_span_context = find_span_context(options.references)) {
-      span = tracer_->startSpan(operation_name, options.start_system_timestamp,
-                                parent_span_context->span_context);
-    } else {
-      span = tracer_->startSpan(operation_name, options.start_system_timestamp);
-    }
+    auto span =
+        tracer_->startSpan(operation_name, options.start_system_timestamp);
     span->setTracer(tracer_.get());
+    if (auto parent_span_context = find_span_context(options.references)) {
+      span->setTraceId(parent_span_context->span_context.trace_id());
+      span->setParentId(parent_span_context->span_context.id());
+    }
     return std::unique_ptr<ot::Span>{
         new OtSpan{shared_from_this(), std::move(span)}};
   }

@@ -1,4 +1,5 @@
 #include "zipkin_reporter_impl.h"
+#include <iostream>
 
 namespace zipkin {
 
@@ -23,6 +24,7 @@ void ReporterImpl::reportSpan(const Span &span) {
     spans_.addSpan(span);
     isFull = spans_.pendingSpans() == max_buffered_spans;
   }
+  std::cout << "pendingSpans = " << spans_.pendingSpans() << "\n";
   if (isFull)
     write_cond_.notify_one();
 }
