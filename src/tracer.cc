@@ -7,7 +7,7 @@
 
 namespace zipkin {
 
-SpanPtr Tracer::startSpan(const std::string& span_name, SystemTime timestamp) {
+SpanPtr Tracer::startSpan(const std::string &span_name, SystemTime timestamp) {
   // Build the endpoint
   Endpoint ep(service_name_, address_);
 
@@ -24,7 +24,8 @@ SpanPtr Tracer::startSpan(const std::string& span_name, SystemTime timestamp) {
   span_ptr->setTraceId(random_number);
   int64_t start_time_micro =
       std::chrono::duration_cast<std::chrono::microseconds>(
-          SteadyClock::now().time_since_epoch()).count();
+          SteadyClock::now().time_since_epoch())
+          .count();
   span_ptr->setStartTime(start_time_micro);
 
   // Set the timestamp globally for the span and also for the CS annotation
@@ -43,17 +44,20 @@ SpanPtr Tracer::startSpan(const std::string& span_name, SystemTime timestamp) {
   return span_ptr;
 }
 
-SpanPtr Tracer::startSpan(const std::string& span_name, SystemTime timestamp,
-                          const SpanContext& previous_context) {
+SpanPtr Tracer::startSpan(const std::string &span_name, SystemTime timestamp,
+                          const SpanContext &previous_context) {
   SpanPtr span_ptr(new Span());
   Annotation annotation;
   uint64_t timestamp_micro;
 
-  timestamp_micro =
-      std::chrono::duration_cast<std::chrono::microseconds>(timestamp.time_since_epoch()).count();
+  timestamp_micro = std::chrono::duration_cast<std::chrono::microseconds>(
+                        timestamp.time_since_epoch())
+                        .count();
 
-  if (previous_context.annotationSet().sr_ && !previous_context.annotationSet().cs_) {
-    // We need to create a new span that is a child of the previous span; no shared context
+  if (previous_context.annotationSet().sr_ &&
+      !previous_context.annotationSet().cs_) {
+    // We need to create a new span that is a child of the previous span; no
+    // shared context
 
     // Create a new span id
     uint64_t random_number = RandomUtil::generateId();
@@ -69,8 +73,10 @@ SpanPtr Tracer::startSpan(const std::string& span_name, SystemTime timestamp,
 
     // Set the timestamp globally for the span
     span_ptr->setTimestamp(timestamp_micro);
-  } else if (previous_context.annotationSet().cs_ && !previous_context.annotationSet().sr_) {
-    // We need to create a new span that will share context with the previous span
+  } else if (previous_context.annotationSet().cs_ &&
+             !previous_context.annotationSet().sr_) {
+    // We need to create a new span that will share context with the previous
+    // span
 
     // Initialize the shared context for the new span
     span_ptr->setId(previous_context.id());
@@ -97,7 +103,8 @@ SpanPtr Tracer::startSpan(const std::string& span_name, SystemTime timestamp,
 
   int64_t start_time_micro =
       std::chrono::duration_cast<std::chrono::microseconds>(
-          SteadyClock::now().time_since_epoch()).count();
+          SteadyClock::now().time_since_epoch())
+          .count();
   span_ptr->setStartTime(start_time_micro);
 
   span_ptr->setTracer(this);
@@ -105,12 +112,14 @@ SpanPtr Tracer::startSpan(const std::string& span_name, SystemTime timestamp,
   return span_ptr;
 }
 
-void Tracer::reportSpan(Span&& span) {
+void Tracer::reportSpan(Span &&span) {
   if (reporter_) {
     reporter_->reportSpan(std::move(span));
   }
 }
 
-void Tracer::setReporter(ReporterPtr reporter) { reporter_ = std::move(reporter); }
+void Tracer::setReporter(ReporterPtr reporter) {
+  reporter_ = std::move(reporter);
+}
 
 } // namespace zipkin

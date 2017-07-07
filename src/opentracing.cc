@@ -1,9 +1,9 @@
 #include <zipkin/opentracing.h>
 
 #include "tracer.h"
+#include "zipkin_core_types.h"
 #include "zipkin_http_transporter.h"
 #include "zipkin_reporter_impl.h"
-#include "zipkin_core_types.h"
 
 using opentracing::string_view;
 using opentracing::Value;
@@ -14,25 +14,24 @@ namespace ot = opentracing;
 
 namespace zipkin {
 class OtSpanContext : public ot::SpanContext {
- public:
-  explicit OtSpanContext(zipkin::SpanContext&& span_context_)
+public:
+  explicit OtSpanContext(zipkin::SpanContext &&span_context_)
       : span_context{std::move(span_context_)} {}
 
   void ForeachBaggageItem(
-      std::function<bool(const std::string&, const std::string&)> f)
+      std::function<bool(const std::string &, const std::string &)> f)
       const override {}
   zipkin::SpanContext span_context;
 };
 
 class OtSpan : public ot::Span {
- public:
-  OtSpan(std::shared_ptr<const ot::Tracer>&& tracer, SpanPtr&& span)
-      : tracer_{std::move(tracer)},
-        span_{std::move(span)},
+public:
+  OtSpan(std::shared_ptr<const ot::Tracer> &&tracer, SpanPtr &&span)
+      : tracer_{std::move(tracer)}, span_{std::move(span)},
         span_context_{zipkin::SpanContext{*span_}} {}
 
-  void FinishWithOptions(
-      const ot::FinishSpanOptions& options) noexcept override {
+  void
+  FinishWithOptions(const ot::FinishSpanOptions &options) noexcept override {
     span_->finish();
   }
 
@@ -41,7 +40,7 @@ class OtSpan : public ot::Span {
   }
 
   void SetTag(string_view restricted_key,
-              const Value& value) noexcept override {}
+              const Value &value) noexcept override {}
 
   void SetBaggageItem(string_view restricted_key,
                       string_view value) noexcept override {}
@@ -53,24 +52,24 @@ class OtSpan : public ot::Span {
   void Log(std::initializer_list<std::pair<string_view, Value>>
                fields) noexcept override {}
 
-  const ot::SpanContext& context() const noexcept override {
+  const ot::SpanContext &context() const noexcept override {
     return span_context_;
   }
 
-  const ot::Tracer& tracer() const noexcept override { return *tracer_; }
+  const ot::Tracer &tracer() const noexcept override { return *tracer_; }
 
- private:
+private:
   std::shared_ptr<const ot::Tracer> tracer_;
   SpanPtr span_;
   OtSpanContext span_context_;
 };
 
-const OtSpanContext* find_span_context(
-    const std::vector<std::pair<ot::SpanReferenceType, const ot::SpanContext*>>&
-        references) {
-  for (auto& reference : references) {
+const OtSpanContext *find_span_context(
+    const std::vector<std::pair<ot::SpanReferenceType, const ot::SpanContext *>>
+        &references) {
+  for (auto &reference : references) {
     if (auto span_context =
-            dynamic_cast<const OtSpanContext*>(reference.second)) {
+            dynamic_cast<const OtSpanContext *>(reference.second)) {
       return span_context;
     }
   }
@@ -79,62 +78,63 @@ const OtSpanContext* find_span_context(
 
 class OtTracer : public ot::Tracer,
                  public std::enable_shared_from_this<OtTracer> {
- public:
-  explicit OtTracer(TracerPtr&& tracer) : tracer_{std::move(tracer)} {}
+public:
+  explicit OtTracer(TracerPtr &&tracer) : tracer_{std::move(tracer)} {}
 
-  std::unique_ptr<ot::Span> StartSpanWithOptions(
-      string_view operation_name, const ot::StartSpanOptions& options) const
+  std::unique_ptr<ot::Span>
+  StartSpanWithOptions(string_view operation_name,
+                       const ot::StartSpanOptions &options) const
       noexcept override {
     SpanPtr span;
     if (auto parent_span_context = find_span_context(options.references)) {
       span = tracer_->startSpan(operation_name, options.start_system_timestamp,
                                 parent_span_context->span_context);
     } else {
-      span = 
-        tracer_->startSpan(operation_name, options.start_system_timestamp);
+      span = tracer_->startSpan(operation_name, options.start_system_timestamp);
     }
     span->setTracer(tracer_.get());
     return std::unique_ptr<ot::Span>{
         new OtSpan{shared_from_this(), std::move(span)}};
   }
 
-  expected<void> Inject(const ot::SpanContext& sc,
-                        std::ostream& writer) const override {
+  expected<void> Inject(const ot::SpanContext &sc,
+                        std::ostream &writer) const override {
     return {};
   }
 
-  expected<void> Inject(const ot::SpanContext& sc,
-                        const ot::TextMapWriter& writer) const override {
+  expected<void> Inject(const ot::SpanContext &sc,
+                        const ot::TextMapWriter &writer) const override {
     return {};
   }
 
-  expected<void> Inject(const ot::SpanContext& sc,
-                        const ot::HTTPHeadersWriter& writer) const override {
+  expected<void> Inject(const ot::SpanContext &sc,
+                        const ot::HTTPHeadersWriter &writer) const override {
     return {};
   }
 
-  expected<std::unique_ptr<ot::SpanContext>> Extract(
-      std::istream& reader) const override {
+  expected<std::unique_ptr<ot::SpanContext>>
+  Extract(std::istream &reader) const override {
     return std::unique_ptr<ot::SpanContext>{};
   }
 
-  expected<std::unique_ptr<ot::SpanContext>> Extract(
-      const ot::TextMapReader& reader) const override {
+  expected<std::unique_ptr<ot::SpanContext>>
+  Extract(const ot::TextMapReader &reader) const override {
     return std::unique_ptr<ot::SpanContext>{};
   }
 
-  expected<std::unique_ptr<ot::SpanContext>> Extract(
-      const ot::HTTPHeadersReader& reader) const override {
+  expected<std::unique_ptr<ot::SpanContext>>
+  Extract(const ot::HTTPHeadersReader &reader) const override {
     return std::unique_ptr<ot::SpanContext>{};
   }
 
   void Close() noexcept override {}
- private:
+
+private:
   TracerPtr tracer_;
 };
 
-std::shared_ptr<ot::Tracer> makeZipkinTracer(
-    const ZipkinTracerOptions& options) {
+std::shared_ptr<ot::Tracer>
+makeZipkinTracer(const ZipkinTracerOptions &options) {
   TracerPtr tracer{new Tracer{options.service_name, options.service_address}};
   TransporterPtr transporter{new ZipkinHttpTransporter{
       options.collector_host.c_str(), options.collector_port}};
@@ -142,4 +142,4 @@ std::shared_ptr<ot::Tracer> makeZipkinTracer(
   tracer->setReporter(std::move(reporter));
   return std::shared_ptr<ot::Tracer>{new OtTracer{std::move(tracer)}};
 }
-}  // namespace zipkin
+} // namespace zipkin

@@ -1,7 +1,7 @@
 #include "zipkin_core_types.h"
 
-#include "utility.h"
 #include "span_context.h"
+#include "utility.h"
 #include "zipkin_core_constants.h"
 #include "zipkin_json_field_names.h"
 
@@ -38,7 +38,7 @@ const std::string Endpoint::toJson() {
   return json_string;
 }
 
-Annotation::Annotation(const Annotation& ann) {
+Annotation::Annotation(const Annotation &ann) {
   timestamp_ = ann.timestamp();
   value_ = ann.value();
   if (ann.isSetEndpoint()) {
@@ -46,7 +46,7 @@ Annotation::Annotation(const Annotation& ann) {
   }
 }
 
-Annotation& Annotation::operator=(const Annotation& ann) {
+Annotation &Annotation::operator=(const Annotation &ann) {
   timestamp_ = ann.timestamp();
   value_ = ann.value();
   if (ann.isSetEndpoint()) {
@@ -56,7 +56,7 @@ Annotation& Annotation::operator=(const Annotation& ann) {
   return *this;
 }
 
-void Annotation::changeEndpointServiceName(const std::string& service_name) {
+void Annotation::changeEndpointServiceName(const std::string &service_name) {
   if (endpoint_.valid()) {
     endpoint_.value().setServiceName(service_name);
   }
@@ -75,14 +75,15 @@ const std::string Annotation::toJson() {
   std::string json_string = s.GetString();
 
   if (endpoint_.valid()) {
-    JsonUtil::mergeJsons(json_string, static_cast<Endpoint>(endpoint_.value()).toJson(),
-                     ZipkinJsonFieldNames::get().ANNOTATION_ENDPOINT.c_str());
+    JsonUtil::mergeJsons(
+        json_string, static_cast<Endpoint>(endpoint_.value()).toJson(),
+        ZipkinJsonFieldNames::get().ANNOTATION_ENDPOINT.c_str());
   }
 
   return json_string;
 }
 
-BinaryAnnotation::BinaryAnnotation(const BinaryAnnotation& ann) {
+BinaryAnnotation::BinaryAnnotation(const BinaryAnnotation &ann) {
   key_ = ann.key();
   value_ = ann.value();
   annotation_type_ = ann.annotationType();
@@ -91,7 +92,7 @@ BinaryAnnotation::BinaryAnnotation(const BinaryAnnotation& ann) {
   }
 }
 
-BinaryAnnotation& BinaryAnnotation::operator=(const BinaryAnnotation& ann) {
+BinaryAnnotation &BinaryAnnotation::operator=(const BinaryAnnotation &ann) {
   key_ = ann.key();
   value_ = ann.value();
   annotation_type_ = ann.annotationType();
@@ -115,8 +116,9 @@ const std::string BinaryAnnotation::toJson() {
   std::string json_string = s.GetString();
 
   if (endpoint_.valid()) {
-    JsonUtil::mergeJsons(json_string, static_cast<Endpoint>(endpoint_.value()).toJson(),
-                     ZipkinJsonFieldNames::get().BINARY_ANNOTATION_ENDPOINT.c_str());
+    JsonUtil::mergeJsons(
+        json_string, static_cast<Endpoint>(endpoint_.value()).toJson(),
+        ZipkinJsonFieldNames::get().BINARY_ANNOTATION_ENDPOINT.c_str());
   }
 
   return json_string;
@@ -124,7 +126,7 @@ const std::string BinaryAnnotation::toJson() {
 
 const std::string Span::EMPTY_HEX_STRING_ = "0000000000000000";
 
-Span::Span(const Span& span) {
+Span::Span(const Span &span) {
   trace_id_ = span.traceId();
   name_ = span.name();
   id_ = span.id();
@@ -147,7 +149,7 @@ Span::Span(const Span& span) {
   tracer_ = span.tracer();
 }
 
-void Span::setServiceName(const std::string& service_name) {
+void Span::setServiceName(const std::string &service_name) {
   for (auto it = annotations_.begin(); it != annotations_.end(); it++) {
     it->changeEndpointServiceName(service_name);
   }
@@ -188,15 +190,18 @@ const std::string Span::toJson() {
   for (auto it = annotations_.begin(); it != annotations_.end(); it++) {
     annotation_json_vector.push_back(it->toJson());
   }
-  JsonUtil::addArrayToJson(json_string, annotation_json_vector,
-                       ZipkinJsonFieldNames::get().SPAN_ANNOTATIONS.c_str());
+  JsonUtil::addArrayToJson(
+      json_string, annotation_json_vector,
+      ZipkinJsonFieldNames::get().SPAN_ANNOTATIONS.c_str());
 
   std::vector<std::string> binary_annotation_json_vector;
-  for (auto it = binary_annotations_.begin(); it != binary_annotations_.end(); it++) {
+  for (auto it = binary_annotations_.begin(); it != binary_annotations_.end();
+       it++) {
     binary_annotation_json_vector.push_back(it->toJson());
   }
-  JsonUtil::addArrayToJson(json_string, binary_annotation_json_vector,
-                       ZipkinJsonFieldNames::get().SPAN_BINARY_ANNOTATIONS.c_str());
+  JsonUtil::addArrayToJson(
+      json_string, binary_annotation_json_vector,
+      ZipkinJsonFieldNames::get().SPAN_BINARY_ANNOTATIONS.c_str());
 
   return json_string;
 }
@@ -209,7 +214,8 @@ void Span::finish() {
     Annotation ss;
     ss.setEndpoint(annotations_[0].endpoint());
     ss.setTimestamp(std::chrono::duration_cast<std::chrono::microseconds>(
-                        SystemClock::now().time_since_epoch()).count());
+                        SystemClock::now().time_since_epoch())
+                        .count());
     ss.setValue(ZipkinCoreConstants::get().SERVER_SEND);
     annotations_.push_back(std::move(ss));
   } else if (context.annotationSet().cs_ && !context.annotationSet().cr_) {
@@ -217,14 +223,16 @@ void Span::finish() {
     Annotation cr;
     const uint64_t stop_timestamp =
         std::chrono::duration_cast<std::chrono::microseconds>(
-            SystemClock::now().time_since_epoch()).count();
+            SystemClock::now().time_since_epoch())
+            .count();
     cr.setEndpoint(annotations_[0].endpoint());
     cr.setTimestamp(stop_timestamp);
     cr.setValue(ZipkinCoreConstants::get().CLIENT_RECV);
     annotations_.push_back(std::move(cr));
     const int64_t monotonic_stop_time =
         std::chrono::duration_cast<std::chrono::microseconds>(
-            SteadyClock::now().time_since_epoch()).count();
+            SteadyClock::now().time_since_epoch())
+            .count();
     setDuration(monotonic_stop_time - monotonic_start_time_);
   }
 
@@ -233,7 +241,7 @@ void Span::finish() {
   }
 }
 
-void Span::setTag(const std::string& name, const std::string& value) {
+void Span::setTag(const std::string &name, const std::string &value) {
   if (name.size() > 0 && value.size() > 0) {
     addBinaryAnnotation(BinaryAnnotation(name, value));
   }

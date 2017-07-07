@@ -2,12 +2,12 @@
 
 #include <array>
 #include <chrono>
+#include <climits>
 #include <cstdint>
 #include <iterator>
+#include <random>
 #include <string>
 #include <vector>
-#include <climits>
-#include <random>
 
 #include <zipkin/rapidjson/document.h>
 #include <zipkin/rapidjson/stringbuffer.h>
@@ -41,21 +41,25 @@ uint64_t RandomUtil::generateId() {
 /* ProdMonotonicTimeSource ProdMonotonicTimeSource::instance_; */
 
 /* bool DateUtil::timePointValid(SystemTime time_point) { */
-/*   return std::chrono::duration_cast<std::chrono::milliseconds>(time_point.time_since_epoch()) */
+/*   return
+ * std::chrono::duration_cast<std::chrono::milliseconds>(time_point.time_since_epoch())
+ */
 /*              .count() != 0; */
 /* } */
 
 /* bool DateUtil::timePointValid(MonotonicTime time_point) { */
-/*   return std::chrono::duration_cast<std::chrono::milliseconds>(time_point.time_since_epoch()) */
+/*   return
+ * std::chrono::duration_cast<std::chrono::milliseconds>(time_point.time_since_epoch())
+ */
 /*              .count() != 0; */
 /* } */
 
-bool StringUtil::atoul(const char* str, uint64_t& out, int base) {
+bool StringUtil::atoul(const char *str, uint64_t &out, int base) {
   if (strlen(str) == 0) {
     return false;
   }
 
-  char* end_ptr;
+  char *end_ptr;
   out = strtoul(str, &end_ptr, base);
   if (*end_ptr != '\0' || (out == ULONG_MAX && errno == ERANGE)) {
     return false;
@@ -64,13 +68,14 @@ bool StringUtil::atoul(const char* str, uint64_t& out, int base) {
   }
 }
 
-uint32_t StringUtil::itoa(char* out, size_t buffer_size, uint64_t i) {
-  // The maximum size required for an unsigned 64-bit integer is 21 chars (including null).
+uint32_t StringUtil::itoa(char *out, size_t buffer_size, uint64_t i) {
+  // The maximum size required for an unsigned 64-bit integer is 21 chars
+  // (including null).
   if (buffer_size < 21) {
     throw std::invalid_argument("itoa buffer too small");
   }
 
-  char* current = out;
+  char *current = out;
   do {
     *current++ = "0123456789"[i % 10];
     i /= 10;
@@ -86,7 +91,7 @@ uint32_t StringUtil::itoa(char* out, size_t buffer_size, uint64_t i) {
   return current - out;
 }
 
-void StringUtil::rtrim(std::string& source) {
+void StringUtil::rtrim(std::string &source) {
   std::size_t pos = source.find_last_not_of(" \t\f\v\n\r");
   if (pos != std::string::npos) {
     source.erase(pos + 1);
@@ -95,17 +100,19 @@ void StringUtil::rtrim(std::string& source) {
   }
 }
 
-size_t StringUtil::strlcpy(char* dst, const char* src, size_t size) {
+size_t StringUtil::strlcpy(char *dst, const char *src, size_t size) {
   strncpy(dst, src, size - 1);
   dst[size - 1] = '\0';
   return strlen(src);
 }
 
-std::vector<std::string> StringUtil::split(const std::string& source, char split) {
+std::vector<std::string> StringUtil::split(const std::string &source,
+                                           char split) {
   return StringUtil::split(source, std::string{split});
 }
 
-std::vector<std::string> StringUtil::split(const std::string& source, const std::string& split,
+std::vector<std::string> StringUtil::split(const std::string &source,
+                                           const std::string &split,
                                            bool keep_empty_string) {
   std::vector<std::string> ret;
   size_t last_index = 0;
@@ -132,7 +139,8 @@ std::vector<std::string> StringUtil::split(const std::string& source, const std:
   return ret;
 }
 
-std::string StringUtil::join(const std::vector<std::string>& source, const std::string& delimiter) {
+std::string StringUtil::join(const std::vector<std::string> &source,
+                             const std::string &delimiter) {
   std::ostringstream buf;
   std::copy(source.begin(), source.end(),
             std::ostream_iterator<std::string>(buf, delimiter.c_str()));
@@ -141,11 +149,12 @@ std::string StringUtil::join(const std::vector<std::string>& source, const std::
   return ret.substr(0, ret.length() - delimiter.length());
 }
 
-std::string StringUtil::subspan(const std::string& source, size_t start, size_t end) {
+std::string StringUtil::subspan(const std::string &source, size_t start,
+                                size_t end) {
   return source.substr(start, end - start);
 }
 
-std::string StringUtil::escape(const std::string& source) {
+std::string StringUtil::escape(const std::string &source) {
   std::string ret;
 
   // Prevent unnecessary allocation by allocating 2x original size.
@@ -178,11 +187,12 @@ std::string StringUtil::escape(const std::string& source) {
 
 /*   return fmt::format( */
 /*       "{}.{:03d}Z", date_format.fromTime(time), */
-/*       std::chrono::duration_cast<std::chrono::milliseconds>(time.time_since_epoch()).count() % */
+/*       std::chrono::duration_cast<std::chrono::milliseconds>(time.time_since_epoch()).count()
+ * % */
 /*           1000); */
 /* } */
 
-bool StringUtil::endsWith(const std::string& source, const std::string& end) {
+bool StringUtil::endsWith(const std::string &source, const std::string &end) {
   if (source.length() < end.length()) {
     return false;
   }
@@ -191,7 +201,8 @@ bool StringUtil::endsWith(const std::string& source, const std::string& end) {
   return std::equal(source.begin() + start_position, source.end(), end.begin());
 }
 
-bool StringUtil::startsWith(const char* source, const std::string& start, bool case_sensitive) {
+bool StringUtil::startsWith(const char *source, const std::string &start,
+                            bool case_sensitive) {
   if (case_sensitive) {
     return strncmp(source, start.c_str(), start.size()) == 0;
   } else {
@@ -199,8 +210,8 @@ bool StringUtil::startsWith(const char* source, const std::string& start, bool c
   }
 }
 
-void JsonUtil::mergeJsons(std::string& target, const std::string& source,
-                      const std::string& field_name) {
+void JsonUtil::mergeJsons(std::string &target, const std::string &source,
+                          const std::string &field_name) {
   rapidjson::Document target_doc, source_doc;
   target_doc.Parse(target.c_str());
   source_doc.Parse(source.c_str());
@@ -214,8 +225,9 @@ void JsonUtil::mergeJsons(std::string& target, const std::string& source,
   target = sb.GetString();
 }
 
-void JsonUtil::addArrayToJson(std::string& target, const std::vector<std::string>& json_array,
-                          const std::string& field_name) {
+void JsonUtil::addArrayToJson(std::string &target,
+                              const std::vector<std::string> &json_array,
+                              const std::string &field_name) {
   std::string stringified_json_array = "[";
 
   if (json_array.size() > 0) {
