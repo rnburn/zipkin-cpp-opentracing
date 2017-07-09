@@ -1,18 +1,17 @@
 #pragma once
 
-#include "span_context.h"
-#include "tracer_interface.h"
-#include "utility.h"
-#include "zipkin_core_types.h"
+#include <zipkin/span_context.h>
+#include <zipkin/tracer_interface.h>
+#include <zipkin/utility.h>
+#include <zipkin/zipkin_core_types.h>
 
 namespace zipkin {
 
 /**
  * Abstract class that delegates to users of the Tracer class the responsibility
  * of "reporting" a Zipkin span that has ended its life cycle. "Reporting" can
- * mean that the
- * span will be sent to out to Zipkin, or buffered so that it can be sent out
- * later.
+ * mean that the span will be sent to out to Zipkin, or buffered so that it can
+ * be sent out later.
  */
 class Reporter {
 public:
@@ -32,6 +31,18 @@ public:
 };
 
 typedef std::unique_ptr<Reporter> ReporterPtr;
+
+/**
+ * Construct a Reporter that sends spans to a Zipkin service via HTTP.
+ *
+ * @param collector_host The host to use when sending spans to the Zipkin
+ * service.
+ * @param collector_port The port to use when sending spans to the Zipkin
+ * service.
+ * @return a Reporter object.
+ */
+ReporterPtr makeHttpReporter(const char *collector_host,
+                             uint32_t collector_port);
 
 /**
  * This class implements the Zipkin tracer. It has methods to create the

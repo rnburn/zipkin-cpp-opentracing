@@ -2,7 +2,7 @@
 #include <zipkin/ip_address.h>
 
 namespace zipkin {
-struct ZipkinTracerOptions {
+struct ZipkinOtTracerOptions {
   std::string collector_host;
   uint32_t collector_port = 9411;
 
@@ -11,5 +11,5 @@ struct ZipkinTracerOptions {
 };
 
 std::shared_ptr<opentracing::Tracer>
-makeZipkinTracer(const ZipkinTracerOptions &options);
+makeZipkinOtTracer(const ZipkinOtTracerOptions &options);
 } // namespace zipkin

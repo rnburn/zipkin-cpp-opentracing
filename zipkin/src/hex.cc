@@ -1,4 +1,4 @@
-#include "hex.h"
+#include <zipkin/hex.h>
 
 #include <array>
 #include <cstdint>

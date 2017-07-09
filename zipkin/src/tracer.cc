@@ -1,12 +1,11 @@
-#include "tracer.h"
+#include <zipkin/tracer.h>
 
 #include <chrono>
 
-#include "utility.h"
+#include <zipkin/utility.h>
 #include "zipkin_core_constants.h"
 
 namespace zipkin {
-
 SpanPtr Tracer::startSpan(const std::string &span_name, SystemTime timestamp) {
   // Build the endpoint
   Endpoint ep(service_name_, address_);
@@ -121,5 +120,4 @@ void Tracer::reportSpan(Span &&span) {
 void Tracer::setReporter(ReporterPtr reporter) {
   reporter_ = std::move(reporter);
 }
-
 } // namespace zipkin

@@ -1,12 +1,14 @@
 #pragma once
 
 #include "transporter.h"
+#include "zipkin_reporter_impl.h"
 
 #include <curl/curl.h>
 #include <exception>
 
 namespace zipkin {
-/** Exception class used for CURL errors.
+/** 
+ * Exception class used for CURL errors.
  */
 class CurlError : public std::exception {
 public:
@@ -77,9 +79,13 @@ private:
  * a zipkin collector via http.
  */
 class ZipkinHttpTransporter : public Transporter {
-public:
+ public:
   /**
    * Constructor.
+   *
+   * @param collector_host The host to use when sending spans to the Zipkin
+   * service.
+   * @param port The port to use when sending spans to the Zipkin service.
    *
    * Throws CurlError if the handle can't be initialized.
    */
@@ -97,7 +103,7 @@ public:
    */
   void transportSpans(SpanBuffer &spans) override;
 
-private:
+ private:
   CurlEnvironment curl_environment_;
   CurlHandle handle_;
   CurlSList headers_;

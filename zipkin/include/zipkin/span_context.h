@@ -2,9 +2,8 @@
 
 #include <regex>
 
-/* #include "common/tracing/zipkin/util.h" */
-#include "hex.h"
-#include "zipkin_core_types.h"
+#include <zipkin/hex.h>
+#include <zipkin/zipkin_core_types.h>
 
 namespace zipkin {
 

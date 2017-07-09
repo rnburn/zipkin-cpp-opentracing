@@ -1,10 +1,8 @@
 #include <zipkin/opentracing.h>
 
-#include "tracer.h"
-#include "utility.h"
-#include "zipkin_core_types.h"
-#include "zipkin_http_transporter.h"
-#include "zipkin_reporter_impl.h"
+#include <zipkin/tracer.h>
+#include <zipkin/utility.h>
+#include <zipkin/zipkin_core_types.h>
 
 using opentracing::string_view;
 using opentracing::Value;
@@ -192,11 +190,10 @@ private:
 };
 
 std::shared_ptr<ot::Tracer>
-makeZipkinTracer(const ZipkinTracerOptions &options) {
+makeZipkinOtTracer(const ZipkinOtTracerOptions &options) {
+  auto reporter =
+      makeHttpReporter(options.collector_host.c_str(), options.collector_port);
   TracerPtr tracer{new Tracer{options.service_name, options.service_address}};
-  TransporterPtr transporter{new ZipkinHttpTransporter{
-      options.collector_host.c_str(), options.collector_port}};
-  ReporterPtr reporter{new ReporterImpl{std::move(transporter)}};
   tracer->setReporter(std::move(reporter));
   return std::shared_ptr<ot::Tracer>{new OtTracer{std::move(tracer)}};
 }

@@ -1,6 +1,6 @@
-#include "span_context.h"
+#include <zipkin/span_context.h>
 
-#include "utility.h"
+#include <zipkin/utility.h>
 #include "zipkin_core_constants.h"
 
 namespace zipkin {

@@ -1,7 +1,7 @@
-#include "zipkin_core_types.h"
+#include <zipkin/zipkin_core_types.h>
 
-#include "span_context.h"
-#include "utility.h"
+#include <zipkin/span_context.h>
+#include <zipkin/utility.h>
 #include "zipkin_core_constants.h"
 #include "zipkin_json_field_names.h"
 

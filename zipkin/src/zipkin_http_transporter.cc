@@ -1,6 +1,7 @@
 #include "zipkin_http_transporter.h"
 
 #include "zipkin_core_constants.h"
+#include "zipkin_reporter_impl.h"
 
 #include <curl/curl.h>
 #include <iostream>
@@ -49,5 +50,17 @@ void ZipkinHttpTransporter::transportSpans(SpanBuffer &spans) try {
   }
 } catch (const std::bad_alloc &) {
   // Drop spans
+}
+
+ReporterPtr makeHttpReporter(const char *collector_host,
+                             uint32_t collector_port) try {
+  std::unique_ptr<Transporter> transporter{
+      new ZipkinHttpTransporter{collector_host, collector_port}};
+  std::unique_ptr<Reporter> reporter{
+      new ReporterImpl{std::move(transporter)}};
+  return reporter;
+} catch (const CurlError &error) {
+  std::cerr << error.what() << '\n';
+  return nullptr;
 }
 } // namespace zipkin

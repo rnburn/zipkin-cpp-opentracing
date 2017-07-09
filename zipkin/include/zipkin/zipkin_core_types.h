@@ -4,9 +4,9 @@
 #include <string>
 #include <vector>
 
-#include "hex.h"
-#include "optional.h"
-#include "tracer_interface.h"
+#include <zipkin/hex.h>
+#include <zipkin/optional.h>
+#include <zipkin/tracer_interface.h>
 #include <zipkin/ip_address.h>
 
 namespace zipkin {
@@ -194,10 +194,8 @@ enum AnnotationType { BOOL = 0, STRING = 1 };
 
 /**
  * Represents a Zipkin binary annotation. This class is based on Zipkin's Thrift
- * definition of
- * a binary annotation. A binary annotation allows arbitrary key-value pairs to
- * be associated
- * with a Zipkin span.
+ * definition of a binary annotation. A binary annotation allows arbitrary
+ * key-value pairs to be associated with a Zipkin span.
  */
 class BinaryAnnotation : public ZipkinBase {
 public:
@@ -523,10 +521,8 @@ public:
 
   /**
    * Associates a Tracer object with the span. The tracer's reportSpan() method
-   * is invoked
-   * by the span's finish() method so that the tracer can decide what to do with
-   * the span
-   * when it is finished.
+   * is invoked by the span's finish() method so that the tracer can decide what
+   * to do with the span when it is finished.
    *
    * @param tracer Represents the Tracer object to be associated with the span.
    */
@@ -541,8 +537,7 @@ public:
    * Marks a successful end of the span. This method will:
    *
    * (1) determine if it needs to add more annotations to the span (e.g., a span
-   * containing a CS
-   * annotation will need to add a CR annotation) and add them;
+   * containing a CS annotation will need to add a CR annotation) and add them;
    * (2) compute and set the span's duration; and
    * (3) invoke the tracer's reportSpan() method if a tracer has been associated
    * with the span.

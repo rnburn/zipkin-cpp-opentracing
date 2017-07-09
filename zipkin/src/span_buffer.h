@@ -1,6 +1,6 @@
 #pragma once
 
-#include "zipkin_core_types.h"
+#include <zipkin/zipkin_core_types.h>
 
 namespace zipkin {
 

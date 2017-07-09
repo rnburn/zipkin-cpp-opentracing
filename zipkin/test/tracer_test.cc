@@ -1,4 +1,4 @@
-#include "../src/tracer.h"
+#include <zipkin/tracer.h>
 #include <iostream>
 using namespace zipkin;
 
