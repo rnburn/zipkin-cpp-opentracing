@@ -1,7 +1,7 @@
 #include <zipkin/span_context.h>
 
-#include <zipkin/utility.h>
 #include "zipkin_core_constants.h"
+#include <zipkin/utility.h>
 
 namespace zipkin {
 

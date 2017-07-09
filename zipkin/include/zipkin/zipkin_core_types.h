@@ -1,13 +1,14 @@
 #pragma once
 
+#include <cassert>
 #include <memory>
 #include <string>
 #include <vector>
 
 #include <zipkin/hex.h>
+#include <zipkin/ip_address.h>
 #include <zipkin/optional.h>
 #include <zipkin/tracer_interface.h>
-#include <zipkin/ip_address.h>
 
 namespace zipkin {
 
@@ -190,7 +191,7 @@ private:
 /**
  * Enum representing valid types of Zipkin binary annotations.
  */
-enum AnnotationType { BOOL = 0, STRING = 1 };
+enum AnnotationType { BOOL = 0, STRING = 1, INT64 = 2, DOUBLE = 3 };
 
 /**
  * Represents a Zipkin binary annotation. This class is based on Zipkin's Thrift
@@ -200,19 +201,9 @@ enum AnnotationType { BOOL = 0, STRING = 1 };
 class BinaryAnnotation : public ZipkinBase {
 public:
   /**
-   * Copy constructor.
-   */
-  BinaryAnnotation(const BinaryAnnotation &);
-
-  /**
-   * Assignment operator.
-   */
-  BinaryAnnotation &operator=(const BinaryAnnotation &);
-
-  /**
    * Default constructor. Creates an empty binary annotation.
    */
-  BinaryAnnotation() : key_(), value_(), annotation_type_(STRING) {}
+  BinaryAnnotation() : key_(), value_string_(), annotation_type_(STRING) {}
 
   /**
    * Constructor that creates a binary annotation based on the given parameters.
@@ -221,19 +212,12 @@ public:
    * @param value The value associated with the key.
    */
   BinaryAnnotation(const std::string &key, const std::string &value)
-      : key_(key), value_(value), annotation_type_(STRING) {}
+      : key_(key), value_string_(value), annotation_type_(STRING) {}
 
   /**
    * @return the type of the binary annotation.
    */
   AnnotationType annotationType() const { return annotation_type_; }
-
-  /**
-   * Sets the binary's annotation type.
-   */
-  void setAnnotationType(AnnotationType annotationType) {
-    annotation_type_ = annotationType;
-  }
 
   /**
    * @return the annotation's endpoint attribute.
@@ -268,12 +252,48 @@ public:
   /**
    * @return the value attribute.
    */
-  const std::string &value() const { return value_; }
+  const std::string &valueString() const {
+    assert(annotation_type_ == STRING);
+    return value_string_;
+  }
+
+  bool valueBool() const {
+    assert(annotation_type_ == BOOL);
+    return value_bool_;
+  }
+
+  int64_t valueInt64() const {
+    assert(annotation_type_ == INT64);
+    return value_int64_;
+  }
+
+  double valueDouble() const {
+    assert(annotation_type_ == DOUBLE);
+    return value_double_;
+  }
 
   /**
    * Sets the value attribute.
    */
-  void setValue(const std::string &value) { value_ = value; }
+  void setValue(const std::string &value) {
+    annotation_type_ = STRING;
+    value_string_ = value;
+  }
+
+  void setValue(bool value) {
+    annotation_type_ = BOOL;
+    value_bool_ = value;
+  }
+
+  void setValue(int64_t value) {
+    annotation_type_ = INT64;
+    value_int64_ = value;
+  }
+
+  void setValue(double value) {
+    annotation_type_ = DOUBLE;
+    value_double_ = value;
+  }
 
   /**
    * Serializes the binary annotation as a Zipkin-compliant JSON representation
@@ -285,7 +305,12 @@ public:
 
 private:
   std::string key_;
-  std::string value_;
+  std::string value_string_;
+  union {
+    bool value_bool_;
+    int64_t value_int64_;
+    double value_double_;
+  };
   Optional<Endpoint> endpoint_;
   AnnotationType annotation_type_;
 };

@@ -5,8 +5,8 @@
 #include <mutex>
 #include <thread>
 
-#include <zipkin/tracer.h>
 #include "transporter.h"
+#include <zipkin/tracer.h>
 
 namespace zipkin {
 /**

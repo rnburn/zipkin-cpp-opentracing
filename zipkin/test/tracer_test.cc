@@ -1,5 +1,5 @@
-#include <zipkin/tracer.h>
 #include <iostream>
+#include <zipkin/tracer.h>
 using namespace zipkin;
 
 int main() {

@@ -56,8 +56,7 @@ ReporterPtr makeHttpReporter(const char *collector_host,
                              uint32_t collector_port) try {
   std::unique_ptr<Transporter> transporter{
       new ZipkinHttpTransporter{collector_host, collector_port}};
-  std::unique_ptr<Reporter> reporter{
-      new ReporterImpl{std::move(transporter)}};
+  std::unique_ptr<Reporter> reporter{new ReporterImpl{std::move(transporter)}};
   return reporter;
 } catch (const CurlError &error) {
   std::cerr << error.what() << '\n';

@@ -2,8 +2,8 @@
 
 #include <chrono>
 
-#include <zipkin/utility.h>
 #include "zipkin_core_constants.h"
+#include <zipkin/utility.h>
 
 namespace zipkin {
 SpanPtr Tracer::startSpan(const std::string &span_name, SystemTime timestamp) {

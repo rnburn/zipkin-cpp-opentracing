@@ -1,9 +1,9 @@
 #include <zipkin/zipkin_core_types.h>
 
-#include <zipkin/span_context.h>
-#include <zipkin/utility.h>
 #include "zipkin_core_constants.h"
 #include "zipkin_json_field_names.h"
+#include <zipkin/span_context.h>
+#include <zipkin/utility.h>
 
 #include <zipkin/rapidjson/stringbuffer.h>
 #include <zipkin/rapidjson/writer.h>
@@ -83,26 +83,6 @@ const std::string Annotation::toJson() {
   return json_string;
 }
 
-BinaryAnnotation::BinaryAnnotation(const BinaryAnnotation &ann) {
-  key_ = ann.key();
-  value_ = ann.value();
-  annotation_type_ = ann.annotationType();
-  if (ann.isSetEndpoint()) {
-    endpoint_ = ann.endpoint();
-  }
-}
-
-BinaryAnnotation &BinaryAnnotation::operator=(const BinaryAnnotation &ann) {
-  key_ = ann.key();
-  value_ = ann.value();
-  annotation_type_ = ann.annotationType();
-  if (ann.isSetEndpoint()) {
-    endpoint_ = ann.endpoint();
-  }
-
-  return *this;
-}
-
 const std::string BinaryAnnotation::toJson() {
   rapidjson::StringBuffer s;
   rapidjson::Writer<rapidjson::StringBuffer> writer(s);
@@ -110,7 +90,20 @@ const std::string BinaryAnnotation::toJson() {
   writer.Key(ZipkinJsonFieldNames::get().BINARY_ANNOTATION_KEY.c_str());
   writer.String(key_.c_str());
   writer.Key(ZipkinJsonFieldNames::get().BINARY_ANNOTATION_VALUE.c_str());
-  writer.String(value_.c_str());
+  switch (annotation_type_) {
+  case STRING:
+    writer.String(value_string_.c_str());
+    break;
+  case BOOL:
+    writer.Bool(value_bool_);
+    break;
+  case INT64:
+    writer.Int64(value_int64_);
+    break;
+  case DOUBLE:
+    writer.Double(value_double_);
+    break;
+  }
   writer.EndObject();
 
   std::string json_string = s.GetString();

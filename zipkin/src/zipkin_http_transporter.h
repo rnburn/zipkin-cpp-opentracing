@@ -7,7 +7,7 @@
 #include <exception>
 
 namespace zipkin {
-/** 
+/**
  * Exception class used for CURL errors.
  */
 class CurlError : public std::exception {
@@ -79,7 +79,7 @@ private:
  * a zipkin collector via http.
  */
 class ZipkinHttpTransporter : public Transporter {
- public:
+public:
   /**
    * Constructor.
    *
@@ -103,7 +103,7 @@ class ZipkinHttpTransporter : public Transporter {
    */
   void transportSpans(SpanBuffer &spans) override;
 
- private:
+private:
   CurlEnvironment curl_environment_;
   CurlHandle handle_;
   CurlSList headers_;
