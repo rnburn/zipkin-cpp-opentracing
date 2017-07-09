@@ -47,8 +47,10 @@ bool ReporterImpl::waitUntilNextReport(const SteadyTime &due_time) {
 void ReporterImpl::writeReports() {
   auto due_time = std::chrono::steady_clock::now() + reporting_period;
   while (waitUntilNextReport(due_time)) {
-    transporter_->transportSpans(inflight_spans_);
-    inflight_spans_.clear();
+    if (inflight_spans_.pendingSpans() > 0) {
+      transporter_->transportSpans(inflight_spans_);
+      inflight_spans_.clear();
+    }
     auto now = std::chrono::steady_clock::now();
     due_time += reporting_period;
     if (due_time < now)
