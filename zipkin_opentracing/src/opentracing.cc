@@ -114,7 +114,7 @@ public:
     // Set tags and finish
     std::lock_guard<std::mutex> lock{mutex_};
     for (const auto &tag : tags_) {
-      span_->addBinaryAnnotation(to_binary_annotation(tag.first, tag.second));
+      span_->addBinaryAnnotation(toBinaryAnnotation(tag.first, tag.second));
     }
     span_->finish();
   } catch (const std::bad_alloc &) {

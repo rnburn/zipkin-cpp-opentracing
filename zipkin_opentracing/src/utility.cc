@@ -7,7 +7,7 @@ using namespace opentracing;
 namespace zipkin {
 using JsonWriter = rapidjson::Writer<rapidjson::StringBuffer>;
 
-static bool to_json(JsonWriter &writer, const Value &value);
+static bool toJson(JsonWriter &writer, const Value &value);
 
 namespace {
 struct JsonValueVisitor {
@@ -35,7 +35,7 @@ struct JsonValueVisitor {
       return;
     }
     for (const auto &value : values) {
-      if (!(result = to_json(writer, value))) {
+      if (!(result = toJson(writer, value))) {
         return;
       }
     }
@@ -52,7 +52,7 @@ struct JsonValueVisitor {
                            static_cast<unsigned>(key_value.first.size())))) {
         return;
       }
-      if (!(result = to_json(writer, key_value.second))) {
+      if (!(result = toJson(writer, key_value.second))) {
         return;
       }
     }
@@ -61,16 +61,16 @@ struct JsonValueVisitor {
 };
 } // anonymous namespace
 
-static bool to_json(JsonWriter &writer, const Value &value) {
+static bool toJson(JsonWriter &writer, const Value &value) {
   JsonValueVisitor value_visitor{writer, true};
   apply_visitor(value_visitor, value);
   return value_visitor.result;
 }
 
-static std::string to_json(const Value &value) {
+static std::string toJson(const Value &value) {
   rapidjson::StringBuffer buffer;
   JsonWriter writer(buffer);
-  if (!to_json(writer, value)) {
+  if (!toJson(writer, value)) {
     return {};
   }
   return buffer.GetString();
@@ -99,16 +99,16 @@ struct ValueVisitor {
   void operator()(const char *s) const { annotation.setValue(std::string{s}); }
 
   void operator()(const Values & /*unused*/) const {
-    annotation.setValue(to_json(original_value));
+    annotation.setValue(toJson(original_value));
   }
 
   void operator()(const Dictionary & /*unused*/) const {
-    annotation.setValue(to_json(original_value));
+    annotation.setValue(toJson(original_value));
   }
 };
 } // anonymous namespace
 
-BinaryAnnotation to_binary_annotation(string_view key, const Value &value) {
+BinaryAnnotation toBinaryAnnotation(string_view key, const Value &value) {
   BinaryAnnotation annotation;
   annotation.setKey(key);
   ValueVisitor value_visitor{annotation, value};
