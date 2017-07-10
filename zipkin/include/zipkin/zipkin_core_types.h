@@ -117,9 +117,8 @@ public:
    * @param timestamp A 64-bit integer containing the annotation timestasmp
    * attribute.
    * @param value A string containing the annotation's value attribute. Valid
-   * values
-   * appear on ZipkinCoreConstants. The most commonly used values are "cs",
-   * "cr", "ss" and "sr".
+   * values appear on ZipkinCoreConstants. The most commonly used values are
+   * "cs", "cr", "ss" and "sr".
    * @param endpoint The endpoint object representing the annotation's endpoint
    * attribute.
    */

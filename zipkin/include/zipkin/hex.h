@@ -2,12 +2,12 @@
 
 #include <string>
 #include <vector>
+#include <zipkin/trace_id.h>
 
 namespace zipkin {
 /**
  * Hex encoder/decoder. Produces lowercase hex digits. Can consume either
- * lowercase or uppercase
- * digits.
+ * lowercase or uppercase digits.
  */
 class Hex final {
 public:
@@ -40,5 +40,11 @@ public:
    * @param value The integer to be converted.
    */
   static std::string uint64ToHex(uint64_t value);
+
+  /**
+   * Converts the given TraceId into a hexadecimal string.
+   * @param trace_id The TraceId to be converted.
+   */
+  static std::string traceIdToHex(const TraceId &value);
 };
 } // namespace zipkin

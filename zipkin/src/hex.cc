@@ -63,4 +63,17 @@ std::string Hex::uint64ToHex(uint64_t value) {
 
   return encode(&data[0], data.size());
 }
+
+std::string Hex::traceIdToHex(const TraceId &trace_id) {
+  std::string result;
+  if (trace_id.high() == 0) {
+    result.reserve(16);
+    result = Hex::uint64ToHex(trace_id.low());
+  } else {
+    result.reserve(32);
+    result.append(Hex::uint64ToHex(trace_id.high()));
+    result.append(Hex::uint64ToHex(trace_id.low()));
+  }
+  return result;
+}
 } // namespace zipkin
