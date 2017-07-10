@@ -104,6 +104,13 @@ const std::string BinaryAnnotation::toJson() {
     writer.Double(value_double_);
     break;
   }
+
+  if (annotation_type_ == INT64) {
+    writer.Key(ZipkinJsonFieldNames::get().BINARY_ANNOTATION_TYPE.c_str());
+    writer.String(
+        ZipkinJsonFieldNames::get().BINARY_ANNOTATION_TYPE_INT64.c_str());
+  }
+
   writer.EndObject();
 
   std::string json_string = s.GetString();

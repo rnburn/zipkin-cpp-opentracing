@@ -24,6 +24,8 @@ public:
   const std::string BINARY_ANNOTATION_ENDPOINT = "endpoint";
   const std::string BINARY_ANNOTATION_KEY = "key";
   const std::string BINARY_ANNOTATION_VALUE = "value";
+  const std::string BINARY_ANNOTATION_TYPE = "type";
+  const std::string BINARY_ANNOTATION_TYPE_INT64 = "I64";
 
   const std::string ENDPOINT_SERVICE_NAME = "serviceName";
   const std::string ENDPOINT_PORT = "port";

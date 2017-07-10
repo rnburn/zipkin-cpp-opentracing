@@ -1,5 +1,9 @@
 #include <zipkin/opentracing.h>
 
+#include "utility.h"
+#include <atomic>
+#include <mutex>
+#include <unordered_map>
 #include <zipkin/tracer.h>
 #include <zipkin/utility.h>
 #include <zipkin/zipkin_core_types.h>
@@ -81,12 +85,23 @@ public:
                             start_system_timestamp.time_since_epoch())
                             .count());
 
+    // Set tags.
+    for (auto &tag : options.tags) {
+      tags_[tag.first] = tag.second;
+    }
+
     // Set context.
     span_context_ = OtSpanContext{zipkin::SpanContext{*span_}};
   }
 
-  void
-  FinishWithOptions(const ot::FinishSpanOptions &options) noexcept override {
+  void FinishWithOptions(const ot::FinishSpanOptions &options) noexcept override
+      try {
+    // Ensure the span is only finished once.
+    if (is_finished_.exchange(true)) {
+      return;
+    }
+
+    // Set timing information.
     auto finish_timestamp = options.finish_steady_timestamp;
     if (finish_timestamp == SteadyTime()) {
       finish_timestamp = SteadyClock::now();
@@ -96,15 +111,29 @@ public:
         std::chrono::duration_cast<std::chrono::microseconds>(duration)
             .count());
 
+    // Set tags and finish
+    std::lock_guard<std::mutex> lock{mutex_};
+    for (const auto &tag : tags_) {
+      span_->addBinaryAnnotation(to_binary_annotation(tag.first, tag.second));
+    }
     span_->finish();
+  } catch (const std::bad_alloc &) {
+    // Do nothing if memory allocation fails.
   }
 
-  void SetOperationName(string_view name) noexcept override {
+  void SetOperationName(string_view name) noexcept override try {
+    std::lock_guard<std::mutex> lock_guard{mutex_};
     span_->setName(name);
+  } catch (const std::bad_alloc &) {
+    // Do nothing if memory allocation fails.
   }
 
-  void SetTag(string_view restricted_key,
-              const Value &value) noexcept override {}
+  void SetTag(string_view key, const Value &value) noexcept override try {
+    std::lock_guard<std::mutex> lock_guard{mutex_};
+    tags_[key] = value;
+  } catch (const std::bad_alloc &) {
+    // Do nothing if memory allocation fails.
+  }
 
   void SetBaggageItem(string_view restricted_key,
                       string_view value) noexcept override {}
@@ -124,9 +153,14 @@ public:
 
 private:
   std::shared_ptr<const ot::Tracer> tracer_;
-  SpanPtr span_;
   OtSpanContext span_context_;
   SteadyTime start_steady_timestamp_;
+
+  // Mutex protects tags_ and span_
+  std::atomic<bool> is_finished_{false};
+  std::mutex mutex_;
+  std::unordered_map<std::string, Value> tags_;
+  SpanPtr span_;
 };
 
 class OtTracer : public ot::Tracer,
