@@ -94,6 +94,11 @@ public:
     span_context_ = OtSpanContext{zipkin::SpanContext{*span_}};
   }
 
+  ~OtSpan() override {
+    if (!is_finished_)
+      this->Finish();
+  }
+
   void FinishWithOptions(const ot::FinishSpanOptions &options) noexcept override
       try {
     // Ensure the span is only finished once.
