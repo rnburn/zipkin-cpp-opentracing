@@ -48,6 +48,13 @@ public:
   SpanContext(const Span &span);
 
   /**
+   * Constructor that creates a context object from the given IDs.
+   */
+  SpanContext(const TraceId &trace_id, uint64_t id, const TraceId &parent_id)
+      : trace_id_{trace_id}, id_{id}, parent_id_{parent_id}, is_initialized_{
+                                                                 true} {}
+
+  /**
    * Serializes the SpanContext object as a string. This encoding of a
    * SpanContext is used as the contents of the x-ot-span-context HTTP header,
    * and allows Envoy to track the relationships among related Zipkin spans.
