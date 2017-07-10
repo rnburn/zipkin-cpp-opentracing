@@ -79,7 +79,7 @@ SpanPtr Tracer::startSpan(const std::string &span_name, SystemTime timestamp,
 
     // Initialize the shared context for the new span
     span_ptr->setId(previous_context.id());
-    if (previous_context.parent_id()) {
+    if (!previous_context.parent_id().empty()) {
       span_ptr->setParentId(previous_context.parent_id());
     }
 

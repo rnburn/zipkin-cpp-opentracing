@@ -3,6 +3,7 @@
 #include <regex>
 
 #include <zipkin/hex.h>
+#include <zipkin/trace_id.h>
 #include <zipkin/zipkin_core_types.h>
 
 namespace zipkin {
@@ -90,24 +91,26 @@ public:
   /**
    * @return the span's parent id as an integer.
    */
-  uint64_t parent_id() const { return parent_id_; }
+  TraceId parent_id() const { return parent_id_; }
 
   /**
    * @return the parent id as a 16-character hexadecimal string.
    */
   std::string parentIdAsHexString() const {
-    return Hex::uint64ToHex(parent_id_);
+    return Hex::traceIdToHex(parent_id_);
   }
 
   /**
    * @return the trace id as an integer.
    */
-  uint64_t trace_id() const { return trace_id_; }
+  TraceId trace_id() const { return trace_id_; }
 
   /**
    * @return the trace id as a 16-character hexadecimal string.
    */
-  std::string traceIdAsHexString() const { return Hex::uint64ToHex(trace_id_); }
+  std::string traceIdAsHexString() const {
+    return Hex::traceIdToHex(trace_id_);
+  }
 
   /**
    * @return a struct indicating which annotations are present in the span.
@@ -115,9 +118,9 @@ public:
   AnnotationSet annotationSet() const { return annotation_values_; }
 
 private:
-  uint64_t trace_id_;
+  TraceId trace_id_;
   uint64_t id_;
-  uint64_t parent_id_;
+  TraceId parent_id_;
   AnnotationSet annotation_values_;
   bool is_initialized_;
 };

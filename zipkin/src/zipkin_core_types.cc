@@ -126,29 +126,6 @@ const std::string BinaryAnnotation::toJson() {
 
 const std::string Span::EMPTY_HEX_STRING_ = "0000000000000000";
 
-Span::Span(const Span &span) {
-  trace_id_ = span.traceId();
-  name_ = span.name();
-  id_ = span.id();
-  if (span.isSetParentId()) {
-    parent_id_ = span.parentId();
-  }
-  debug_ = span.debug();
-  annotations_ = span.annotations();
-  binary_annotations_ = span.binaryAnnotations();
-  if (span.isSetTimestamp()) {
-    timestamp_ = span.timestamp();
-  }
-  if (span.isSetDuration()) {
-    duration_ = span.duration();
-  }
-  if (span.isSetTraceIdHigh()) {
-    trace_id_high_ = span.traceIdHigh();
-  }
-  monotonic_start_time_ = span.startTime();
-  tracer_ = span.tracer();
-}
-
 void Span::setServiceName(const std::string &service_name) {
   for (auto it = annotations_.begin(); it != annotations_.end(); it++) {
     it->changeEndpointServiceName(service_name);
@@ -160,15 +137,15 @@ const std::string Span::toJson() {
   rapidjson::Writer<rapidjson::StringBuffer> writer(s);
   writer.StartObject();
   writer.Key(ZipkinJsonFieldNames::get().SPAN_TRACE_ID.c_str());
-  writer.String(Hex::uint64ToHex(trace_id_).c_str());
+  writer.String(Hex::traceIdToHex(trace_id_).c_str());
   writer.Key(ZipkinJsonFieldNames::get().SPAN_NAME.c_str());
   writer.String(name_.c_str());
   writer.Key(ZipkinJsonFieldNames::get().SPAN_ID.c_str());
   writer.String(Hex::uint64ToHex(id_).c_str());
 
-  if (parent_id_.valid() && parent_id_.value()) {
+  if (parent_id_.valid() && !parent_id_.value().empty()) {
     writer.Key(ZipkinJsonFieldNames::get().SPAN_PARENT_ID.c_str());
-    writer.String(Hex::uint64ToHex(parent_id_.value()).c_str());
+    writer.String(Hex::traceIdToHex(parent_id_.value()).c_str());
   }
 
   if (timestamp_.valid()) {
