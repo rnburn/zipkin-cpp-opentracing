@@ -1,5 +1,6 @@
 #include <zipkin/opentracing.h>
 
+#include "propagation.h"
 #include "utility.h"
 #include <atomic>
 #include <mutex>
@@ -41,13 +42,39 @@ class OtSpanContext : public ot::SpanContext {
 public:
   OtSpanContext() = default;
 
-  explicit OtSpanContext(zipkin::SpanContext &&span_context_)
-      : span_context{std::move(span_context_)} {}
+  explicit OtSpanContext(zipkin::SpanContext &&span_context)
+      : span_context_{std::move(span_context)} {}
+
+  OtSpanContext(zipkin::SpanContext &&span_context,
+                std::unordered_map<std::string, std::string> &&baggage)
+      : span_context_{std::move(span_context)}, baggage_{std::move(baggage_)} {}
+
+  OtSpanContext(OtSpanContext &&other) {
+    span_context_ = std::move(other.span_context_);
+    baggage_ = std::move(other.baggage_);
+  }
+
+  OtSpanContext &operator=(OtSpanContext &&other) {
+    std::lock_guard<std::mutex> lock_guard{baggage_mutex_};
+    span_context_ = std::move(other.span_context_);
+    baggage_ = std::move(other.baggage_);
+  }
 
   void ForeachBaggageItem(
       std::function<bool(const std::string &, const std::string &)> f)
       const override {}
-  zipkin::SpanContext span_context;
+
+  template <class Carrier> expected<void> Inject(Carrier &writer) const {
+    std::lock_guard<std::mutex> lock_guard{baggage_mutex_};
+    return injectSpanContext(writer, span_context_, baggage_);
+  }
+
+private:
+  zipkin::SpanContext span_context_;
+  mutable std::mutex baggage_mutex_;
+  std::unordered_map<std::string, std::string> baggage_;
+
+  friend class OtSpan;
 };
 
 static const OtSpanContext *findSpanContext(
@@ -70,8 +97,8 @@ public:
     // Set IDs.
     span_->setId(RandomUtil::generateId());
     if (auto parent_span_context = findSpanContext(options.references)) {
-      span_->setTraceId(parent_span_context->span_context.trace_id());
-      span_->setParentId(parent_span_context->span_context.id());
+      span_->setTraceId(parent_span_context->span_context_.trace_id());
+      span_->setParentId(parent_span_context->span_context_.id());
     } else {
       span_->setTraceId(RandomUtil::generateId());
     }
@@ -226,6 +253,33 @@ public:
 
 private:
   TracerPtr tracer_;
+
+  template <class Carrier>
+  expected<void> InjectImpl(const ot::SpanContext &sc, Carrier &writer) const {
+    auto ot_span_context = dynamic_cast<const OtSpanContext *>(&sc);
+    if (ot_span_context == nullptr) {
+      return make_unexpected(ot::invalid_span_context_error);
+    }
+    return ot_span_context->Inject(writer);
+  }
+
+  template <class Carrier>
+  expected<std::unique_ptr<ot::SpanContext>>
+  ExtractImpl(Carrier &reader) const {
+    std::unordered_map<std::string, std::string> baggage;
+    auto zipkin_span_context_maybe = extractSpanContext(reader, baggage);
+    if (!zipkin_span_context_maybe) {
+      return ot::make_unexpected(zipkin_span_context_maybe.error());
+    }
+    std::unique_ptr<ot::SpanContext> span_context{
+        new (std::nothrow) OtSpanContext(std::move(*zipkin_span_context_maybe),
+                                         std::move(baggage))};
+    if (!span_context) {
+      return make_unexpected(
+          std::make_error_code(std::errc::not_enough_memory));
+    }
+    return std::move(span_context);
+  }
 };
 
 std::shared_ptr<ot::Tracer>
