@@ -1,5 +1,7 @@
 #include "propagation.h"
 
+#include <string>
+
 namespace ot = opentracing;
 
 namespace zipkin {
@@ -27,7 +29,40 @@ opentracing::expected<void>
 injectSpanContext(const opentracing::TextMapWriter &carrier,
                   const zipkin::SpanContext &span_context,
                   const std::unordered_map<std::string, std::string> &baggage) {
-  return ot::make_unexpected(ot::invalid_carrier_error);
+  auto result = carrier.Set(zipkin_trace_id, span_context.traceIdAsHexString());
+  if (!result) {
+    return result;
+  }
+  result = carrier.Set(zipkin_span_id, span_context.idAsHexString());
+  if (!result) {
+    return result;
+  }
+  result = carrier.Set(zipkin_sampled, "true");
+  if (!result) {
+    return result;
+  }
+  if (span_context.isSetParentId()) {
+    result =
+        carrier.Set(zipkin_parent_span_id, span_context.parentIdAsHexString());
+    if (!result) {
+      return result;
+    }
+  }
+  result = carrier.Set(zipkin_flags,
+                       std::to_string(span_context.flags() & debug_flag));
+  if (!result) {
+    return result;
+  }
+  std::string baggage_key = prefix_baggage;
+  for (const auto &baggage_item : baggage) {
+    baggage_key.replace(std::begin(baggage_key) + prefix_baggage.size(),
+                        std::end(baggage_key), baggage_item.first);
+    result = carrier.Set(baggage_key, baggage_item.second);
+    if (!result) {
+      return result;
+    }
+  }
+  return result;
 }
 
 opentracing::expected<zipkin::SpanContext>

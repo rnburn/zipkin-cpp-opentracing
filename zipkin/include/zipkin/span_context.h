@@ -2,7 +2,9 @@
 
 #include <regex>
 
+#include <zipkin/flags.h>
 #include <zipkin/hex.h>
+#include <zipkin/optional.h>
 #include <zipkin/trace_id.h>
 #include <zipkin/zipkin_core_types.h>
 
@@ -37,7 +39,8 @@ public:
   /**
    * Default constructor. Creates an empty context.
    */
-  SpanContext() : trace_id_(0), id_(0), parent_id_(0), is_initialized_(false) {}
+  SpanContext()
+      : trace_id_(0), id_(0), parent_id_(), flags_(0), is_initialized_(false) {}
 
   /**
    * Constructor that creates a context object from the given Zipkin span
@@ -50,40 +53,10 @@ public:
   /**
    * Constructor that creates a context object from the given IDs.
    */
-  SpanContext(const TraceId &trace_id, uint64_t id, const TraceId &parent_id)
-      : trace_id_{trace_id}, id_{id}, parent_id_{parent_id}, is_initialized_{
-                                                                 true} {}
-
-  /**
-   * Serializes the SpanContext object as a string. This encoding of a
-   * SpanContext is used as the contents of the x-ot-span-context HTTP header,
-   * and allows Envoy to track the relationships among related Zipkin spans.
-   *
-   * @return a string-encoded SpanContext in the following format:
-   *
-   * "<16-hex-string trace id>;<16-hex-string span id>;<16-hex-string parent
-   * id>;<annotation list>
-   *
-   * The annotation list, if present, can contain the strings "cs", "cr", "ss",
-   * "sr", depending on which annotations are present. The semi-colon character
-   * is used as the separator for the annotation list.
-   *
-   * Example of a returned string corresponding to a span with the SR
-   * annotation:
-   * "25c6f38dd0600e78;56707c7b3e1092af;c49193ea42335d1c;sr"
-   *
-   * Example of a returned string corresponding to a span with no annotations:
-   * "25c6f38dd0600e78;56707c7b3e1092af;c49193ea42335d1c"
-   */
-  const std::string serializeToString();
-
-  /**
-   * Initializes a SpanContext object based on the given string.
-   *
-   * @param span_context_str The string-encoding of a SpanContext in the same
-   * format produced by the method serializeToString().
-   */
-  void populateFromString(const std::string &span_context_str);
+  SpanContext(const TraceId &trace_id, uint64_t id,
+              const Optional<TraceId> &parent_id, flags_t flags)
+      : trace_id_{trace_id}, id_{id}, parent_id_{parent_id}, flags_{flags},
+        is_initialized_{true} {}
 
   /**
    * @return the span id as an integer
@@ -96,15 +69,20 @@ public:
   std::string idAsHexString() const { return Hex::uint64ToHex(id_); }
 
   /**
+   * @return Whether or not the parent_id attribute is set.
+   */
+  bool isSetParentId() const { return parent_id_.valid(); }
+
+  /**
    * @return the span's parent id as an integer.
    */
-  TraceId parent_id() const { return parent_id_; }
+  TraceId parent_id() const { return parent_id_.value(); }
 
   /**
    * @return the parent id as a 16-character hexadecimal string.
    */
   std::string parentIdAsHexString() const {
-    return Hex::traceIdToHex(parent_id_);
+    return Hex::traceIdToHex(parent_id_.value());
   }
 
   /**
@@ -120,6 +98,11 @@ public:
   }
 
   /**
+   * @return the flags as an integer.
+   */
+  flags_t flags() const { return flags_; }
+
+  /**
    * @return a struct indicating which annotations are present in the span.
    */
   AnnotationSet annotationSet() const { return annotation_values_; }
@@ -127,8 +110,9 @@ public:
 private:
   TraceId trace_id_;
   uint64_t id_;
-  TraceId parent_id_;
+  Optional<TraceId> parent_id_;
   AnnotationSet annotation_values_;
+  flags_t flags_;
   bool is_initialized_;
 };
 } // namespace zipkin
