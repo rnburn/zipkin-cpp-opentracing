@@ -255,30 +255,32 @@ private:
   TracerPtr tracer_;
 
   template <class Carrier>
-  expected<void> InjectImpl(const ot::SpanContext &sc, Carrier &writer) const {
+  expected<void> InjectImpl(const ot::SpanContext &sc, Carrier &writer) const
+      try {
     auto ot_span_context = dynamic_cast<const OtSpanContext *>(&sc);
     if (ot_span_context == nullptr) {
       return make_unexpected(ot::invalid_span_context_error);
     }
     return ot_span_context->Inject(writer);
+  } catch (const std::bad_alloc &) {
+    return ot::make_unexpected(
+        std::make_error_code(std::errc::not_enough_memory));
   }
 
   template <class Carrier>
-  expected<std::unique_ptr<ot::SpanContext>>
-  ExtractImpl(Carrier &reader) const {
+  expected<std::unique_ptr<ot::SpanContext>> ExtractImpl(Carrier &reader) const
+      try {
     std::unordered_map<std::string, std::string> baggage;
     auto zipkin_span_context_maybe = extractSpanContext(reader, baggage);
     if (!zipkin_span_context_maybe) {
       return ot::make_unexpected(zipkin_span_context_maybe.error());
     }
-    std::unique_ptr<ot::SpanContext> span_context{
-        new (std::nothrow) OtSpanContext(std::move(*zipkin_span_context_maybe),
-                                         std::move(baggage))};
-    if (!span_context) {
-      return make_unexpected(
-          std::make_error_code(std::errc::not_enough_memory));
-    }
+    std::unique_ptr<ot::SpanContext> span_context{new OtSpanContext(
+        std::move(*zipkin_span_context_maybe), std::move(baggage))};
     return std::move(span_context);
+  } catch (const std::bad_alloc &) {
+    return ot::make_unexpected(
+        std::make_error_code(std::errc::not_enough_memory));
   }
 };
 

@@ -1,6 +1,9 @@
 #include "propagation.h"
 
+#include <algorithm>
+#include <cctype>
 #include <string>
+#include <zipkin/utility.h>
 
 namespace ot = opentracing;
 
@@ -17,6 +20,30 @@ const ot::string_view zipkin_parent_span_id =
 const ot::string_view zipkin_sampled = PREFIX_TRACER_STATE "sampled";
 const ot::string_view zipkin_flags = PREFIX_TRACER_STATE "flags";
 #undef PREFIX_TRACER_STATE
+
+static bool keyCompare(ot::string_view lhs, ot::string_view rhs) {
+  return lhs.length() == rhs.length() &&
+         std::equal(
+             std::begin(lhs), std::end(lhs), std::begin(rhs),
+             [](char a, char b) { return std::tolower(a) == std::tolower(b); });
+}
+
+// Follows the rules of the go function strconv.ParseBool so as to interoperate
+// with the other Zipkin tracing libraries.
+// See https://golang.org/pkg/strconv/#ParseBool
+static bool parseBool(ot::string_view s, bool &result) {
+  if (s == "1" || s == "t" || s == "T" || s == "TRUE" || s == "true" ||
+      s == "True") {
+    result = true;
+    return true;
+  }
+  if (s == "0" || s == "f" || s == "F" || s == "FALSE" || s == "false" ||
+      s == "False") {
+    result = false;
+    return true;
+  }
+  return false;
+}
 
 opentracing::expected<void>
 injectSpanContext(std::ostream &carrier,
@@ -74,6 +101,54 @@ extractSpanContext(std::istream &carrier,
 opentracing::expected<zipkin::SpanContext>
 extractSpanContext(const opentracing::TextMapReader &carrier,
                    std::unordered_map<std::string, std::string> &baggage) {
-  return ot::make_unexpected(ot::invalid_carrier_error);
+  int field_count = 0;
+  TraceId trace_id;
+  Optional<TraceId> parent_id;
+  uint64_t span_id;
+  flags_t flags;
+  auto result = carrier.ForeachKey(
+      [&](ot::string_view key, ot::string_view value) -> ot::expected<void> {
+        if (keyCompare(key, zipkin_trace_id)) {
+          auto trace_id_maybe = Hex::hexToTraceId(value);
+          if (!trace_id_maybe.valid()) {
+            return ot::make_unexpected(ot::span_context_corrupted_error);
+          }
+          trace_id = trace_id_maybe.value();
+          ++field_count;
+        } else if (keyCompare(key, zipkin_span_id)) {
+          auto span_id_maybe = Hex::hexToUint64(value);
+          if (!span_id_maybe.valid()) {
+            return ot::make_unexpected(ot::span_context_corrupted_error);
+          }
+          span_id = span_id_maybe.value();
+          ++field_count;
+        } else if (keyCompare(key, zipkin_flags)) {
+          auto value_str = std::string{value};
+          flags_t f;
+          if (!StringUtil::atoull(value_str.c_str(), f)) {
+            return ot::make_unexpected(ot::span_context_corrupted_error);
+          }
+          // Only use the debug flag.
+          flags |= f & debug_flag;
+          ++field_count;
+        } else if (keyCompare(key, zipkin_sampled)) {
+          bool sampled;
+          if (!parseBool(value, sampled)) {
+            return ot::make_unexpected(ot::span_context_corrupted_error);
+          }
+          flags |= sampled_flag;
+        } else if (keyCompare(key, zipkin_parent_span_id)) {
+          parent_id = Hex::hexToTraceId(value);
+          if (!parent_id.valid()) {
+            return ot::make_unexpected(ot::span_context_corrupted_error);
+          }
+        }
+        // TODO: Handle baggage keys.
+        return {};
+      });
+  if (field_count != tracer_state_field_count) {
+    return ot::make_unexpected(ot::span_context_corrupted_error);
+  }
+  return SpanContext{trace_id, span_id, parent_id, flags};
 }
 } // namespace zipkin

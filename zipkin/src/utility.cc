@@ -5,6 +5,7 @@
 #include <climits>
 #include <cstdint>
 #include <iterator>
+#include <limits>
 #include <random>
 #include <string>
 #include <vector>
@@ -62,6 +63,21 @@ bool StringUtil::atoul(const char *str, uint64_t &out, int base) {
   char *end_ptr;
   out = strtoul(str, &end_ptr, base);
   if (*end_ptr != '\0' || (out == ULONG_MAX && errno == ERANGE)) {
+    return false;
+  } else {
+    return true;
+  }
+}
+
+bool StringUtil::atoull(const char *str, uint64_t &out, int base) {
+  if (strlen(str) == 0) {
+    return false;
+  }
+
+  char *end_ptr;
+  out = strtoull(str, &end_ptr, base);
+  if (*end_ptr != '\0' ||
+      (out == std::numeric_limits<uint64_t>::max() && errno == ERANGE)) {
     return false;
   } else {
     return true;
