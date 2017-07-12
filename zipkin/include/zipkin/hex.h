@@ -2,6 +2,7 @@
 
 #include <string>
 #include <vector>
+#include <zipkin/optional.h>
 #include <zipkin/trace_id.h>
 
 namespace zipkin {
@@ -46,5 +47,17 @@ public:
    * @param trace_id The TraceId to be converted.
    */
   static std::string traceIdToHex(const TraceId &value);
+
+  /**
+   * Converts the given hexadecimal string into a 64-bit integer.
+   * @param value The hexadecimal string to be converted.
+   */
+  static Optional<uint64_t> hexToUint64(const std::string &s);
+
+  /**
+   * Converts the given hexadecimal string into a TraceId.
+   * @param value The hexadecimal string to be converted.
+   */
+  static Optional<TraceId> hexToTraceId(const std::string &s);
 };
 } // namespace zipkin

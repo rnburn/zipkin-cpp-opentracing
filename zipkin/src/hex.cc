@@ -1,15 +1,11 @@
 #include <zipkin/hex.h>
+#include <zipkin/utility.h>
 
 #include <array>
 #include <cstdint>
+#include <iostream>
 #include <string>
 #include <vector>
-
-/* #include "envoy/common/exception.h" */
-
-/* #include "common/common/utility.h" */
-
-/* #include "spdlog/spdlog.h" */
 
 namespace zipkin {
 std::string Hex::encode(const uint8_t *data, size_t length) {
@@ -27,26 +23,41 @@ std::string Hex::encode(const uint8_t *data, size_t length) {
   return ret;
 }
 
-/* std::vector<uint8_t> Hex::decode(const std::string& hex_string) { */
-/*   if (hex_string.size() == 0 || hex_string.size() % 2 != 0) { */
-/*     throw EnvoyException(fmt::format("invalid hex string '{}'", hex_string));
- */
-/*   } */
+static std::vector<uint8_t> decode(const std::string &hex_string) {
+  if (hex_string.empty()) {
+    return {};
+  }
+  auto num_bytes = hex_string.size() / 2 + (hex_string.size() % 2 > 0);
+  std::vector<uint8_t> result;
+  result.reserve(num_bytes);
 
-/*   std::vector<uint8_t> segment; */
-/*   for (size_t i = 0; i < hex_string.size(); i += 2) { */
-/*     std::string hex_byte = hex_string.substr(i, 2); */
-/*     uint64_t out; */
-/*     if (!StringUtil::atoul(hex_byte.c_str(), out, 16)) { */
-/*       throw EnvoyException(fmt::format("invalid hex string '{}'",
- * hex_string)); */
-/*     } */
+  std::vector<uint8_t> segment;
+  segment.reserve(num_bytes);
+  size_t i = 0;
+  std::string hex_byte;
+  hex_byte.reserve(2);
+  uint64_t out;
 
-/*     segment.push_back(out); */
-/*   } */
+  if (hex_string.size() % 2 == 1) {
+    hex_byte = hex_string.substr(0, 1);
+    if (!StringUtil::atoul(hex_byte.c_str(), out, 16)) {
+      return {};
+    }
+    segment.push_back(out);
+    i = 1;
+  }
 
-/*   return segment; */
-/* } */
+  for (; i < hex_string.size(); i += 2) {
+    hex_byte = hex_string.substr(i, 2);
+    if (!StringUtil::atoul(hex_byte.c_str(), out, 16)) {
+      return {};
+    }
+
+    segment.push_back(out);
+  }
+
+  return segment;
+}
 
 std::string Hex::uint64ToHex(uint64_t value) {
   std::array<uint8_t, 8> data;
@@ -75,5 +86,35 @@ std::string Hex::traceIdToHex(const TraceId &trace_id) {
     result.append(Hex::uint64ToHex(trace_id.low()));
   }
   return result;
+}
+
+Optional<uint64_t> Hex::hexToUint64(const std::string &s) {
+  auto data = decode(s);
+  if (data.empty() || data.size() > 8) {
+    return {};
+  }
+  uint64_t result = 0;
+  for (auto d : data) {
+    result = result * 256 + d;
+  }
+  return result;
+}
+
+Optional<TraceId> Hex::hexToTraceId(const std::string &s) {
+  auto data = decode(s);
+  if (data.empty() || data.size() > 16) {
+    return {};
+  }
+  uint64_t trace_id_high = 0;
+  uint64_t trace_id_low = 0;
+  size_t num_bytes_low = std::min<size_t>(8, data.size());
+  size_t num_bytes_high = data.size() - num_bytes_low;
+  for (size_t i = 0; i < num_bytes_high; ++i) {
+    trace_id_high = trace_id_high * 256 + data[i];
+  }
+  for (size_t i = num_bytes_high; i < data.size(); ++i) {
+    trace_id_low = trace_id_low * 256 + data[i];
+  }
+  return TraceId{trace_id_high, trace_id_low};
 }
 } // namespace zipkin
