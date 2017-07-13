@@ -3,7 +3,7 @@
 
 namespace zipkin {
 struct ZipkinOtTracerOptions {
-  std::string collector_host;
+  std::string collector_host = "localhost";
   uint32_t collector_port = 9411;
 
   std::string service_name;
