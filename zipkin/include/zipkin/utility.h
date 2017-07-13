@@ -13,63 +13,13 @@ using SteadyClock = std::chrono::steady_clock;
 using SystemTime = SystemClock::time_point;
 using SteadyTime = SteadyClock::time_point;
 
+/**
+ * Utility routines for working with random number generation.
+ */
 class RandomUtil {
 public:
   static uint64_t generateId();
 };
-/* /** */
-/*  * Utility class for formatting dates given a strftime style format string.
- */
-/*  *1/ */
-/* class DateFormatter { */
-/* public: */
-/*   DateFormatter(const std::string& format_string) :
- * format_string_(format_string) {} */
-
-/*   /** */
-/*    * @return std::string representing the GMT/UTC time based on the input
- * time. */
-/*    *1/ */
-/*   std::string fromTime(const SystemTime& time); */
-
-/*   /** */
-/*    * @return std::string representing the current GMT/UTC time based on the
- * format string. */
-/*    *1/ */
-/*   std::string now(); */
-
-/* private: */
-/*   std::string fromTimeT(time_t time); */
-
-/*   std::string format_string_; */
-/* }; */
-
-/* /** */
-/*  * Utility class for access log date/time format with milliseconds support.
- */
-/*  *1/ */
-/* class AccessLogDateTimeFormatter { */
-/* public: */
-/*   static std::string fromTime(const SystemTime& time); */
-/* }; */
-
-/* /** */
-/*  * Utility class for date/time helpers. */
-/*  *1/ */
-/* class DateUtil { */
-/* public: */
-/*   /** */
-/*    * @return whether a time_point contains a valid, not default constructed
- * time. */
-/*    *1/ */
-/*   static bool timePointValid(SystemTime time_point); */
-
-/*   /** */
-/*    * @return whether a time_point contains a valid, not default constructed
- * time. */
-/*    *1/ */
-/*   static bool timePointValid(MonotonicTime time_point); */
-/* }; */
 
 /**
  * Utility routines for working with strings.

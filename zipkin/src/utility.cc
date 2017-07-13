@@ -19,41 +19,6 @@ uint64_t RandomUtil::generateId() {
   static thread_local std::mt19937_64 rand_source{std::random_device{}()};
   return rand_source();
 }
-/* std::string DateFormatter::fromTime(const SystemTime& time) { */
-/*   return fromTimeT(std::chrono::system_clock::to_time_t(time)); */
-/* } */
-
-/* std::string DateFormatter::fromTimeT(time_t time) { */
-/*   tm current_tm; */
-/*   gmtime_r(&time, &current_tm); */
-
-/*   std::array<char, 1024> buf; */
-/*   strftime(&buf[0], buf.size(), format_string_.c_str(), &current_tm); */
-/*   return std::string(&buf[0]); */
-/* } */
-
-/* std::string DateFormatter::now() { */
-/*   time_t current_time_t; */
-/*   time(&current_time_t); */
-/*   return fromTimeT(current_time_t); */
-/* } */
-
-/* ProdSystemTimeSource ProdSystemTimeSource::instance_; */
-/* ProdMonotonicTimeSource ProdMonotonicTimeSource::instance_; */
-
-/* bool DateUtil::timePointValid(SystemTime time_point) { */
-/*   return
- * std::chrono::duration_cast<std::chrono::milliseconds>(time_point.time_since_epoch())
- */
-/*              .count() != 0; */
-/* } */
-
-/* bool DateUtil::timePointValid(MonotonicTime time_point) { */
-/*   return
- * std::chrono::duration_cast<std::chrono::milliseconds>(time_point.time_since_epoch())
- */
-/*              .count() != 0; */
-/* } */
 
 bool StringUtil::atoul(const char *str, uint64_t &out, int base) {
   if (strlen(str) == 0) {
@@ -197,16 +162,6 @@ std::string StringUtil::escape(const std::string &source) {
 
   return ret;
 }
-
-/* std::string AccessLogDateTimeFormatter::fromTime(const SystemTime& time) { */
-/*   static DateFormatter date_format("%Y-%m-%dT%H:%M:%S"); */
-
-/*   return fmt::format( */
-/*       "{}.{:03d}Z", date_format.fromTime(time), */
-/*       std::chrono::duration_cast<std::chrono::milliseconds>(time.time_since_epoch()).count()
- * % */
-/*           1000); */
-/* } */
 
 bool StringUtil::endsWith(const std::string &source, const std::string &end) {
   if (source.length() < end.length()) {
