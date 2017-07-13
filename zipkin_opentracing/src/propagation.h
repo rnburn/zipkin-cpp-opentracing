@@ -15,11 +15,11 @@ injectSpanContext(const opentracing::TextMapWriter &carrier,
                   const zipkin::SpanContext &span_context,
                   const std::unordered_map<std::string, std::string> &baggage);
 
-opentracing::expected<zipkin::SpanContext>
+opentracing::expected<Optional<zipkin::SpanContext>>
 extractSpanContext(std::istream &carrier,
                    std::unordered_map<std::string, std::string> &baggage);
 
-opentracing::expected<zipkin::SpanContext>
+opentracing::expected<Optional<zipkin::SpanContext>>
 extractSpanContext(const opentracing::TextMapReader &carrier,
                    std::unordered_map<std::string, std::string> &baggage);
 } // namespace zipkin

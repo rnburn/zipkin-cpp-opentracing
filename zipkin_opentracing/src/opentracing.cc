@@ -276,8 +276,11 @@ private:
     if (!zipkin_span_context_maybe) {
       return ot::make_unexpected(zipkin_span_context_maybe.error());
     }
+    if (!zipkin_span_context_maybe->valid()) {
+      return std::unique_ptr<ot::SpanContext>{};
+    }
     std::unique_ptr<ot::SpanContext> span_context{new OtSpanContext(
-        std::move(*zipkin_span_context_maybe), std::move(baggage))};
+        std::move(zipkin_span_context_maybe->value()), std::move(baggage))};
     return std::move(span_context);
   } catch (const std::bad_alloc &) {
     return ot::make_unexpected(

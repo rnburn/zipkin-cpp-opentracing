@@ -92,13 +92,13 @@ injectSpanContext(const opentracing::TextMapWriter &carrier,
   return result;
 }
 
-opentracing::expected<zipkin::SpanContext>
+opentracing::expected<Optional<zipkin::SpanContext>>
 extractSpanContext(std::istream &carrier,
                    std::unordered_map<std::string, std::string> &baggage) {
   return ot::make_unexpected(ot::invalid_carrier_error);
 }
 
-opentracing::expected<zipkin::SpanContext>
+opentracing::expected<Optional<zipkin::SpanContext>>
 extractSpanContext(const opentracing::TextMapReader &carrier,
                    std::unordered_map<std::string, std::string> &baggage) {
   int field_count = 0;
@@ -146,9 +146,13 @@ extractSpanContext(const opentracing::TextMapReader &carrier,
         // TODO: Handle baggage keys.
         return {};
       });
+  if (field_count == 0) {
+    return {};
+  }
   if (field_count != tracer_state_field_count) {
     return ot::make_unexpected(ot::span_context_corrupted_error);
   }
-  return SpanContext{trace_id, span_id, parent_id, flags};
+  return Optional<SpanContext>{
+      SpanContext{trace_id, span_id, parent_id, flags}};
 }
 } // namespace zipkin
