@@ -58,6 +58,7 @@ public:
     std::lock_guard<std::mutex> lock_guard{baggage_mutex_};
     span_context_ = std::move(other.span_context_);
     baggage_ = std::move(other.baggage_);
+    return *this;
   }
 
   void ForeachBaggageItem(
