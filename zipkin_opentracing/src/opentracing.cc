@@ -47,7 +47,7 @@ public:
 
   OtSpanContext(zipkin::SpanContext &&span_context,
                 std::unordered_map<std::string, std::string> &&baggage)
-      : span_context_{std::move(span_context)}, baggage_{std::move(baggage_)} {}
+      : span_context_{std::move(span_context)}, baggage_{std::move(baggage)} {}
 
   OtSpanContext(OtSpanContext &&other) {
     span_context_ = std::move(other.span_context_);
@@ -222,32 +222,32 @@ public:
 
   expected<void> Inject(const ot::SpanContext &sc,
                         std::ostream &writer) const override {
-    return {};
+    return InjectImpl(sc, writer);
   }
 
   expected<void> Inject(const ot::SpanContext &sc,
                         const ot::TextMapWriter &writer) const override {
-    return {};
+    return InjectImpl(sc, writer);
   }
 
   expected<void> Inject(const ot::SpanContext &sc,
                         const ot::HTTPHeadersWriter &writer) const override {
-    return {};
+    return InjectImpl(sc, writer);
   }
 
   expected<std::unique_ptr<ot::SpanContext>>
   Extract(std::istream &reader) const override {
-    return std::unique_ptr<ot::SpanContext>{};
+    return ExtractImpl(reader);
   }
 
   expected<std::unique_ptr<ot::SpanContext>>
   Extract(const ot::TextMapReader &reader) const override {
-    return std::unique_ptr<ot::SpanContext>{};
+    return ExtractImpl(reader);
   }
 
   expected<std::unique_ptr<ot::SpanContext>>
   Extract(const ot::HTTPHeadersReader &reader) const override {
-    return std::unique_ptr<ot::SpanContext>{};
+    return ExtractImpl(reader);
   }
 
   void Close() noexcept override {}
