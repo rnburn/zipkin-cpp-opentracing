@@ -142,8 +142,14 @@ extractSpanContext(const opentracing::TextMapReader &carrier,
           if (!parent_id.valid()) {
             return ot::make_unexpected(ot::span_context_corrupted_error);
           }
+        } else if (key.length() > prefix_baggage.size() &&
+                   keyCompare(
+                       ot::string_view{key.data(), prefix_baggage.size()},
+                       prefix_baggage)) {
+          baggage.emplace(std::string{std::begin(key) + prefix_baggage.size(),
+                                      std::end(key)},
+                          value);
         }
-        // TODO: Handle baggage keys.
         return {};
       });
   if (field_count == 0) {
