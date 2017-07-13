@@ -3,7 +3,7 @@ OpenTracing implementation for Zipkin in C++.
 
 ## Dependencies
 
-* The C++ [OpenTracing Library](https://github.com/opentracing/opentracing-cpp).
+* The [C++ OpenTracing Library](https://github.com/opentracing/opentracing-cpp).
 * [curl](https://curl.haxx.se/)
 
 ## Compile and install
