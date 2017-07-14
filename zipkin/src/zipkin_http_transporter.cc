@@ -38,7 +38,6 @@ ZipkinHttpTransporter::~ZipkinHttpTransporter() {}
 
 void ZipkinHttpTransporter::transportSpans(SpanBuffer &spans) try {
   auto data = spans.toStringifiedJsonArray();
-  std::cout << data << "\n";
   auto rcode = curl_easy_setopt(handle_, CURLOPT_POSTFIELDS, data.c_str());
   if (rcode != CURLE_OK) {
     std::cerr << curl_easy_strerror(rcode) << '\n';

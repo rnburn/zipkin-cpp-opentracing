@@ -1,5 +1,7 @@
 #pragma once
 
+#include <atomic>
+#include <chrono>
 #include <condition_variable>
 #include <memory>
 #include <mutex>
@@ -42,6 +44,8 @@ public:
    */
   void reportSpan(const Span &span) override;
 
+  bool flushWithTimeout(std::chrono::system_clock::duration timeout) override;
+
 private:
   TransporterPtr transporter_;
 
@@ -49,6 +53,8 @@ private:
   std::condition_variable write_cond_;
   bool write_exit_ = false;
   std::thread writer_;
+  int64_t num_spans_reported_ = 0;
+  std::atomic<int64_t> num_spans_flushed_{0};
   SpanBuffer spans_;
   SpanBuffer inflight_spans_;
 

@@ -11,8 +11,8 @@ using opentracing::expected;
 using opentracing::string_view;
 
 class TextMapCarrier : public TextMapReader, public TextMapWriter {
- public:
-  TextMapCarrier(std::unordered_map<std::string, std::string>& text_map)
+public:
+  TextMapCarrier(std::unordered_map<std::string, std::string> &text_map)
       : text_map_(text_map) {}
 
   expected<void> Set(string_view key, string_view value) const override {
@@ -23,15 +23,16 @@ class TextMapCarrier : public TextMapReader, public TextMapWriter {
   expected<void> ForeachKey(
       std::function<expected<void>(string_view key, string_view value)> f)
       const override {
-    for (const auto& key_value : text_map_) {
+    for (const auto &key_value : text_map_) {
       auto result = f(key_value.first, key_value.second);
-      if (!result) return result;
+      if (!result)
+        return result;
     }
     return {};
   }
 
- private:
-  std::unordered_map<std::string, std::string>& text_map_;
+private:
+  std::unordered_map<std::string, std::string> &text_map_;
 };
 
-#endif  // LIGHTSTEP_TEXT_MAP_CARRIER
+#endif // LIGHTSTEP_TEXT_MAP_CARRIER

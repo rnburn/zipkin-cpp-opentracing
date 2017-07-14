@@ -18,15 +18,27 @@ ReporterImpl::~ReporterImpl() {
 }
 
 void ReporterImpl::reportSpan(const Span &span) {
-  bool isFull;
+  bool is_full;
   {
     std::lock_guard<std::mutex> lock(write_mutex_);
-    spans_.addSpan(span);
-    isFull = spans_.pendingSpans() == max_buffered_spans;
+    num_spans_reported_ += spans_.addSpan(span);
+    is_full = spans_.pendingSpans() == max_buffered_spans;
   }
-  std::cout << "pendingSpans = " << spans_.pendingSpans() << "\n";
-  if (isFull)
+  if (is_full)
     write_cond_.notify_one();
+}
+
+bool ReporterImpl::flushWithTimeout(
+    std::chrono::system_clock::duration timeout) {
+  // Note: there is no effort made to speed up the flush when
+  // requested, it simply waits for the regularly scheduled flush
+  // operations to clear out all the presently pending data.
+  std::unique_lock<std::mutex> lock{write_mutex_};
+
+  auto num_spans_snapshot = num_spans_reported_;
+  return write_cond_.wait_for(lock, timeout, [this, num_spans_snapshot] {
+    return this->num_spans_flushed_ >= num_spans_snapshot;
+  });
 }
 
 void ReporterImpl::makeWriterExit() {
@@ -49,7 +61,9 @@ void ReporterImpl::writeReports() {
   while (waitUntilNextReport(due_time)) {
     if (inflight_spans_.pendingSpans() > 0) {
       transporter_->transportSpans(inflight_spans_);
+      num_spans_flushed_ += inflight_spans_.pendingSpans();
       inflight_spans_.clear();
+      write_cond_.notify_all();
     }
     auto now = std::chrono::steady_clock::now();
     due_time += reporting_period;

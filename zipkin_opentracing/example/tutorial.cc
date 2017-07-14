@@ -1,8 +1,8 @@
-#include <zipkin/opentracing.h>
+#include "text_map_carrier.h"
 #include <cassert>
 #include <iostream>
 #include <unordered_map>
-#include "text_map_carrier.h"
+#include <zipkin/opentracing.h>
 using namespace zipkin;
 using namespace opentracing;
 

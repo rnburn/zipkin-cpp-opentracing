@@ -250,7 +250,9 @@ public:
     return ExtractImpl(reader);
   }
 
-  void Close() noexcept override {}
+  void Close() noexcept override {
+    tracer_->flushWithTimeout(std::chrono::hours{24});
+  }
 
 private:
   TracerPtr tracer_;

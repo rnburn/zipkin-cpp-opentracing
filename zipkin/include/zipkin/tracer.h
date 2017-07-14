@@ -27,7 +27,16 @@ public:
    * @param span The span that needs action.
    */
   virtual void reportSpan(const Span &span) = 0;
-  ;
+
+  /**
+   * Optional method that a concrete Reporter class can implement to flush
+   * buffered spans.
+   *
+   * @param timeout The timeout to use when flushing.
+   */
+  virtual bool flushWithTimeout(std::chrono::system_clock::duration timeout) {
+    return true;
+  }
 };
 
 typedef std::unique_ptr<Reporter> ReporterPtr;
@@ -108,6 +117,18 @@ public:
    * Associates a Reporter object with this Tracer.
    */
   void setReporter(ReporterPtr reporter);
+
+  /**
+   * Optional method that a concrete Reporter class can implement to flush
+   * buffered spans.
+   *
+   * @param timeout The timeout to use when flushing.
+   */
+  bool flushWithTimeout(std::chrono::system_clock::duration timeout) {
+    if (reporter_)
+      return reporter_->flushWithTimeout(timeout);
+    return false;
+  }
 
 private:
   const std::string service_name_;
