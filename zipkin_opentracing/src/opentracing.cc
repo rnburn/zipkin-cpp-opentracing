@@ -290,12 +290,18 @@ private:
   }
 };
 
+std::shared_ptr<opentracing::Tracer>
+makeZipkinOtTracer(const ZipkinOtTracerOptions &options,
+                   std::unique_ptr<Reporter> &&reporter) {
+  TracerPtr tracer{new Tracer{options.service_name, options.service_address}};
+  tracer->setReporter(std::move(reporter));
+  return std::shared_ptr<ot::Tracer>{new OtTracer{std::move(tracer)}};
+}
+
 std::shared_ptr<ot::Tracer>
 makeZipkinOtTracer(const ZipkinOtTracerOptions &options) {
   auto reporter =
       makeHttpReporter(options.collector_host.c_str(), options.collector_port);
-  TracerPtr tracer{new Tracer{options.service_name, options.service_address}};
-  tracer->setReporter(std::move(reporter));
-  return std::shared_ptr<ot::Tracer>{new OtTracer{std::move(tracer)}};
+  return makeZipkinOtTracer(options, std::move(reporter));
 }
 } // namespace zipkin
