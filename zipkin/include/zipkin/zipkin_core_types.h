@@ -232,7 +232,9 @@ public:
   /**
    * Sets the annotation's endpoint attribute (move semantics).
    */
-  void setEndpoint(const Endpoint &&endpoint) { endpoint_.value(endpoint); }
+  void setEndpoint(Endpoint &&endpoint) {
+    endpoint_.value(std::move(endpoint));
+  }
 
   /**
    * @return true of the endpoint attribute has been set, or false otherwise.
@@ -375,7 +377,9 @@ public:
   /**
    * Adds an annotation to the span (move semantics).
    */
-  void addAnnotation(const Annotation &&ann) { annotations_.push_back(ann); }
+  void addAnnotation(Annotation &&ann) {
+    annotations_.push_back(std::move(ann));
+  }
 
   /**
    * Sets the span's binary annotations all at once.
@@ -394,8 +398,8 @@ public:
   /**
    * Adds a binary annotation to the span (move semantics).
    */
-  void addBinaryAnnotation(const BinaryAnnotation &&bann) {
-    binary_annotations_.push_back(bann);
+  void addBinaryAnnotation(BinaryAnnotation &&bann) {
+    binary_annotations_.push_back(std::move(bann));
   }
 
   /**
