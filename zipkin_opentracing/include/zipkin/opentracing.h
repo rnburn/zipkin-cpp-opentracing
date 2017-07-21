@@ -1,5 +1,6 @@
 #include <opentracing/tracer.h>
 #include <zipkin/ip_address.h>
+#include <zipkin/tracer.h>
 
 namespace zipkin {
 struct ZipkinOtTracerOptions {
@@ -12,4 +13,8 @@ struct ZipkinOtTracerOptions {
 
 std::shared_ptr<opentracing::Tracer>
 makeZipkinOtTracer(const ZipkinOtTracerOptions &options);
+
+std::shared_ptr<opentracing::Tracer>
+makeZipkinOtTracer(const ZipkinOtTracerOptions &options,
+                   std::unique_ptr<Reporter> &&reporter);
 } // namespace zipkin
