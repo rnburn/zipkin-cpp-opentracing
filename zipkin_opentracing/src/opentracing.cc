@@ -63,7 +63,31 @@ public:
 
   void ForeachBaggageItem(
       std::function<bool(const std::string &, const std::string &)> f)
-      const override {}
+      const override {
+    std::lock_guard<std::mutex> lock_guard{baggage_mutex_};
+    for (const auto &baggage_item : baggage_) {
+      if (!f(baggage_item.first, baggage_item.second)) {
+        return;
+      }
+    }
+  }
+
+  void setBaggageItem(string_view key, string_view value) noexcept try {
+    std::lock_guard<std::mutex> lock_guard{baggage_mutex_};
+    baggage_.emplace(key, value);
+  } catch (const std::bad_alloc &) {
+  }
+
+  std::string baggageItem(string_view key) const noexcept try {
+    std::lock_guard<std::mutex> lock_guard{baggage_mutex_};
+    auto lookup = baggage_.find(key);
+    if (lookup != baggage_.end()) {
+      return lookup->second;
+    }
+    return {};
+  } catch (const std::bad_alloc &) {
+    return {};
+  }
 
   template <class Carrier> expected<void> Inject(Carrier &writer) const {
     std::lock_guard<std::mutex> lock_guard{baggage_mutex_};
@@ -95,9 +119,11 @@ public:
   OtSpan(std::shared_ptr<const ot::Tracer> &&tracer_owner, SpanPtr &&span_owner,
          const ot::StartSpanOptions &options)
       : tracer_{std::move(tracer_owner)}, span_{std::move(span_owner)} {
+    auto parent_span_context = findSpanContext(options.references);
+
     // Set IDs.
     span_->setId(RandomUtil::generateId());
-    if (auto parent_span_context = findSpanContext(options.references)) {
+    if (parent_span_context) {
       span_->setTraceId(parent_span_context->span_context_.trace_id());
       span_->setParentId(parent_span_context->span_context_.id());
     } else {
@@ -119,7 +145,15 @@ public:
     }
 
     // Set context.
-    span_context_ = OtSpanContext{zipkin::SpanContext{*span_}};
+    if (parent_span_context) {
+      std::lock_guard<std::mutex> lock_guard{
+          parent_span_context->baggage_mutex_};
+      auto baggage = parent_span_context->baggage_;
+      span_context_ =
+          OtSpanContext{zipkin::SpanContext{*span_}, std::move(baggage)};
+    } else {
+      span_context_ = OtSpanContext{zipkin::SpanContext{*span_}};
+    }
   }
 
   ~OtSpan() override {
@@ -169,10 +203,12 @@ public:
   }
 
   void SetBaggageItem(string_view restricted_key,
-                      string_view value) noexcept override {}
+                      string_view value) noexcept override {
+    span_context_.setBaggageItem(restricted_key, value);
+  }
 
   std::string BaggageItem(string_view restricted_key) const noexcept override {
-    return {};
+    return span_context_.baggageItem(restricted_key);
   }
 
   void Log(std::initializer_list<std::pair<string_view, Value>>

@@ -7,4 +7,4 @@ macro(_zipkin_ot_test TEST_NAME)
   add_test(${TEST_NAME} ${TEST_NAME})
 endmacro()
 
-_zipkin_ot_test(ot_tracer_test tracer_test.cc)
+_zipkin_ot_test(ot_tracer_test ot_tracer_test.cc)
