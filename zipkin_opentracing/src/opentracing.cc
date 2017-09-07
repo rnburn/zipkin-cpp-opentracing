@@ -25,17 +25,21 @@ computeStartTimestamps(const SystemTime &start_system_timestamp,
   // other.
   if (start_system_timestamp == SystemTime() &&
       start_steady_timestamp == SteadyTime()) {
-    return {SystemClock::now(), SteadyClock::now()};
+    return std::tuple<SystemTime, SteadyTime>{SystemClock::now(),
+                                              SteadyClock::now()};
   }
   if (start_system_timestamp == SystemTime()) {
-    return {ot::convert_time_point<SystemClock>(start_steady_timestamp),
-            start_steady_timestamp};
+    return std::tuple<SystemTime, SteadyTime>{
+        ot::convert_time_point<SystemClock>(start_steady_timestamp),
+        start_steady_timestamp};
   }
   if (start_steady_timestamp == SteadyTime()) {
-    return {start_system_timestamp,
-            ot::convert_time_point<SteadyClock>(start_system_timestamp)};
+    return std::tuple<SystemTime, SteadyTime>{
+        start_system_timestamp,
+        ot::convert_time_point<SteadyClock>(start_system_timestamp)};
   }
-  return {start_system_timestamp, start_steady_timestamp};
+  return std::tuple<SystemTime, SteadyTime>{start_system_timestamp,
+                                            start_steady_timestamp};
 }
 
 class OtSpanContext : public ot::SpanContext {
