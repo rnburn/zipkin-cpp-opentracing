@@ -4,6 +4,10 @@ enable_testing()
 project(zipkin-opentracing)
 set(CMAKE_CXX_STANDARD 11)
 
+set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
+set(THREADS_PREFER_PTHREAD_FLAG TRUE)
+find_package(Threads REQUIRED)
+
 find_package(CURL)
 include_directories(SYSTEM ${CURL_INCLUDE_DIRS})
 
