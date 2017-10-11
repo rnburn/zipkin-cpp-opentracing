@@ -109,4 +109,4 @@ private:
   CurlSList headers_;
   char error_buffer_[CURL_ERROR_SIZE];
 };
-} // namesapce zipkin
+} // namespace zipkin

@@ -1,4 +1,5 @@
 #include "utility.h"
+#include <string>
 #include <zipkin/rapidjson/stringbuffer.h>
 #include <zipkin/rapidjson/writer.h>
 
@@ -81,20 +82,26 @@ struct ValueVisitor {
   BinaryAnnotation &annotation;
   const Value &original_value;
 
-  void operator()(bool value) const { annotation.setValue(value); }
+  void operator()(bool value) const {
+    annotation.setValue(std::to_string(value));
+  }
 
-  void operator()(double value) const { annotation.setValue(value); }
+  void operator()(double value) const {
+    annotation.setValue(std::to_string(value));
+  }
 
-  void operator()(int64_t value) const { annotation.setValue(value); }
+  void operator()(int64_t value) const {
+    annotation.setValue(std::to_string(value));
+  }
 
   void operator()(uint64_t value) const {
     // There's no uint64_t value type so cast to an int64_t.
-    annotation.setValue(static_cast<int64_t>(value));
+    annotation.setValue(std::to_string(value));
   }
 
   void operator()(const std::string &s) const { annotation.setValue(s); }
 
-  void operator()(std::nullptr_t) const { annotation.setValue(false); }
+  void operator()(std::nullptr_t) const { annotation.setValue("0"); }
 
   void operator()(const char *s) const { annotation.setValue(std::string{s}); }
 
