@@ -4,7 +4,7 @@
 namespace zipkin {
 
 const SteadyClock::duration reporting_period = std::chrono::milliseconds{500};
-const size_t max_buffered_spans = 5;
+const size_t max_buffered_spans = 1000;
 
 ReporterImpl::ReporterImpl(TransporterPtr &&transporter)
     : transporter_{std::move(transporter)}, spans_{max_buffered_spans},
