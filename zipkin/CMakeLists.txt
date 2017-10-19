@@ -13,5 +13,6 @@ install(TARGETS zipkin
         LIBRARY DESTINATION lib
         ARCHIVE DESTINATION lib)
 
-add_subdirectory(test)
-
+if(BUILD_TESTING)
+  add_subdirectory(test)
+endif()

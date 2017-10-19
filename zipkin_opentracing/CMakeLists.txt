@@ -12,5 +12,7 @@ install(TARGETS zipkin_opentracing
         LIBRARY DESTINATION lib
         ARCHIVE DESTINATION lib)
 
-add_subdirectory(test)
 add_subdirectory(example)
+if(BUILD_TESTING)
+  add_subdirectory(test)
+endif()
