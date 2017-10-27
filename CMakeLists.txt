@@ -1,6 +1,13 @@
 cmake_minimum_required(VERSION 3.0)
 
 project(zipkin-opentracing)
+
+set(ZIPKIN_VERSION_MAJOR "0")
+set(ZIPKIN_VERSION_MINOR "1")
+set(ZIPKIN_VERSION_PATCH "1")
+set(ZIPKIN_VERSION_STRING
+  "${ZIPKIN_VERSION_MAJOR}.${ZIPKIN_VERSION_MINOR}.${ZIPKIN_VERSION_PATCH}")
+
 set(CMAKE_CXX_STANDARD 11)
 include(CTest)
 
