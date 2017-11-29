@@ -12,7 +12,7 @@ namespace zipkin {
 // Note: these constants are a convention of the OpenTracing basictracers.
 const ot::string_view prefix_baggage = "ot-baggage-";
 
-const int tracer_state_field_count = 3;
+const int tracer_state_required_field_count = 2;
 const ot::string_view zipkin_trace_id = PREFIX_TRACER_STATE "traceid";
 const ot::string_view zipkin_span_id = PREFIX_TRACER_STATE "spanid";
 const ot::string_view zipkin_parent_span_id =
@@ -64,7 +64,7 @@ injectSpanContext(const opentracing::TextMapWriter &carrier,
   if (!result) {
     return result;
   }
-  result = carrier.Set(zipkin_sampled, "true");
+  result = carrier.Set(zipkin_sampled, "1");
   if (!result) {
     return result;
   }
@@ -101,11 +101,11 @@ extractSpanContext(std::istream &carrier,
 opentracing::expected<Optional<zipkin::SpanContext>>
 extractSpanContext(const opentracing::TextMapReader &carrier,
                    std::unordered_map<std::string, std::string> &baggage) {
-  int field_count = 0;
+  int required_field_count = 0;
   TraceId trace_id;
   Optional<TraceId> parent_id;
   uint64_t span_id;
-  flags_t flags;
+  flags_t flags = 0;
   auto result = carrier.ForeachKey(
       [&](ot::string_view key, ot::string_view value) -> ot::expected<void> {
         if (keyCompare(key, zipkin_trace_id)) {
@@ -114,14 +114,14 @@ extractSpanContext(const opentracing::TextMapReader &carrier,
             return ot::make_unexpected(ot::span_context_corrupted_error);
           }
           trace_id = trace_id_maybe.value();
-          ++field_count;
+          ++required_field_count;
         } else if (keyCompare(key, zipkin_span_id)) {
           auto span_id_maybe = Hex::hexToUint64(value);
           if (!span_id_maybe.valid()) {
             return ot::make_unexpected(ot::span_context_corrupted_error);
           }
           span_id = span_id_maybe.value();
-          ++field_count;
+          ++required_field_count;
         } else if (keyCompare(key, zipkin_flags)) {
           auto value_str = std::string{value};
           flags_t f;
@@ -130,7 +130,6 @@ extractSpanContext(const opentracing::TextMapReader &carrier,
           }
           // Only use the debug flag.
           flags |= f & debug_flag;
-          ++field_count;
         } else if (keyCompare(key, zipkin_sampled)) {
           bool sampled;
           if (!parseBool(value, sampled)) {
@@ -152,10 +151,10 @@ extractSpanContext(const opentracing::TextMapReader &carrier,
         }
         return {};
       });
-  if (field_count == 0) {
+  if (required_field_count == 0) {
     return {};
   }
-  if (field_count != tracer_state_field_count) {
+  if (required_field_count != tracer_state_required_field_count) {
     return ot::make_unexpected(ot::span_context_corrupted_error);
   }
   return Optional<SpanContext>{
