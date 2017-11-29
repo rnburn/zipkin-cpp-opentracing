@@ -10,11 +10,6 @@ SpanPtr Tracer::startSpan(const std::string &span_name, SystemTime timestamp) {
   // Build the endpoint
   Endpoint ep(service_name_, address_);
 
-  // Build the CS annotation
-  Annotation cs;
-  cs.setEndpoint(std::move(ep));
-  cs.setValue(ZipkinCoreConstants::get().CLIENT_SEND);
-
   // Create an all-new span, with no parent id
   SpanPtr span_ptr(new Span());
   span_ptr->setName(span_name);
@@ -32,11 +27,7 @@ SpanPtr Tracer::startSpan(const std::string &span_name, SystemTime timestamp) {
       std::chrono::duration_cast<std::chrono::microseconds>(
           timestamp.time_since_epoch())
           .count();
-  cs.setTimestamp(timestamp_micro);
   span_ptr->setTimestamp(timestamp_micro);
-
-  // Add CS annotation to the span
-  span_ptr->addAnnotation(std::move(cs));
 
   span_ptr->setTracer(this);
 

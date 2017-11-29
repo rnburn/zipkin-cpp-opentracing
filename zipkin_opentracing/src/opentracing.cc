@@ -121,8 +121,9 @@ static const OtSpanContext *findSpanContext(
 class OtSpan : public ot::Span {
 public:
   OtSpan(std::shared_ptr<const ot::Tracer> &&tracer_owner, SpanPtr &&span_owner,
-         const ot::StartSpanOptions &options)
-      : tracer_{std::move(tracer_owner)}, span_{std::move(span_owner)} {
+         Endpoint &&endpoint, const ot::StartSpanOptions &options)
+      : tracer_{std::move(tracer_owner)}, endpoint_{std::move(endpoint)},
+        span_{std::move(span_owner)} {
     auto parent_span_context = findSpanContext(options.references);
 
     // Set IDs.
@@ -177,13 +178,35 @@ public:
     if (finish_timestamp == SteadyTime()) {
       finish_timestamp = SteadyClock::now();
     }
+    auto start_timestamp_microsecs = static_cast<uint64_t>(span_->timestamp());
     auto duration = finish_timestamp - start_steady_timestamp_;
-    span_->setDuration(
+    auto duration_microsecs = static_cast<uint64_t>(
         std::chrono::duration_cast<std::chrono::microseconds>(duration)
             .count());
+    span_->setDuration(duration_microsecs);
 
     // Set tags and finish
     std::lock_guard<std::mutex> lock{mutex_};
+
+    // Set appropriate CS/SR/SS/CR annotations if span.kind is set.
+    auto span_kind_tag_iter = tags_.find("span.kind");
+    if (span_kind_tag_iter != tags_.end()) {
+      auto &span_kind = span_kind_tag_iter->second;
+      if (span_kind == "client") {
+        Annotation client_send{start_timestamp_microsecs, "cs", endpoint_};
+        Annotation client_receive{
+            start_timestamp_microsecs + duration_microsecs, "cr", endpoint_};
+        span_->addAnnotation(std::move(client_send));
+        span_->addAnnotation(std::move(client_receive));
+      } else if (span_kind == "server") {
+        Annotation server_receive{start_timestamp_microsecs, "sr", endpoint_};
+        Annotation server_send{start_timestamp_microsecs + duration_microsecs,
+                               "ss", endpoint_};
+        span_->addAnnotation(std::move(server_receive));
+        span_->addAnnotation(std::move(server_send));
+      }
+    }
+
     for (const auto &tag : tags_) {
       span_->addBinaryAnnotation(toBinaryAnnotation(tag.first, tag.second));
     }
@@ -226,6 +249,7 @@ public:
 
 private:
   std::shared_ptr<const ot::Tracer> tracer_;
+  Endpoint endpoint_;
   OtSpanContext span_context_;
   SteadyTime start_steady_timestamp_;
 
@@ -250,14 +274,15 @@ public:
     span->setName(operation_name);
     span->setTracer(tracer_.get());
 
+    Endpoint endpoint{tracer_->serviceName(), tracer_->address()};
+
     // Add a binary annotation for the serviceName.
     BinaryAnnotation service_name_annotation{"lc", tracer_->serviceName()};
-    service_name_annotation.setEndpoint(
-        Endpoint{tracer_->serviceName(), tracer_->address()});
+    service_name_annotation.setEndpoint(endpoint);
     span->addBinaryAnnotation(std::move(service_name_annotation));
 
-    return std::unique_ptr<ot::Span>{
-        new OtSpan{shared_from_this(), std::move(span), options}};
+    return std::unique_ptr<ot::Span>{new OtSpan{
+        shared_from_this(), std::move(span), std::move(endpoint), options}};
   }
 
   expected<void> Inject(const ot::SpanContext &sc,

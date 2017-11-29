@@ -123,7 +123,7 @@ public:
    * @param endpoint The endpoint object representing the annotation's endpoint
    * attribute.
    */
-  Annotation(uint64_t timestamp, const std::string value, Endpoint &endpoint)
+  Annotation(uint64_t timestamp, const std::string &value, Endpoint &endpoint)
       : timestamp_(timestamp), value_(value), endpoint_(endpoint) {}
 
   /**
