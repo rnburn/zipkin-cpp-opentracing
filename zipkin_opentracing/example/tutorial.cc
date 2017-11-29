@@ -81,6 +81,20 @@ int main() {
     std::cout << "Example error message: \"" << err.error().message() << "\"\n";
   }
 
+  // span.kind can be used to control whether Zipkin's cs/cr or sr/ss anotations
+  // are set.
+  {
+    auto client_span = tracer->StartSpan("tutorial.clientSpan");
+    assert(client_span);
+    client_span->SetTag("span.kind", "client");
+    auto server_span = tracer->StartSpan("tutorial.serverSpan",
+                                         {ChildOf(&client_span->context())});
+    assert(server_span);
+    server_span->SetTag("span.kind", "server");
+    server_span->Finish();
+    client_span->Finish();
+  }
+
   parent_span->Finish();
   tracer->Close();
 
