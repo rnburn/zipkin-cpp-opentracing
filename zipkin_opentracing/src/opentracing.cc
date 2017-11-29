@@ -3,6 +3,7 @@
 #include "propagation.h"
 #include "utility.h"
 #include <atomic>
+#include <cstring>
 #include <mutex>
 #include <unordered_map>
 #include <zipkin/tracer.h>
@@ -191,14 +192,21 @@ public:
     // Set appropriate CS/SR/SS/CR annotations if span.kind is set.
     auto span_kind_tag_iter = tags_.find("span.kind");
     if (span_kind_tag_iter != tags_.end()) {
-      auto &span_kind = span_kind_tag_iter->second;
-      if (span_kind == "client") {
+      const char *span_kind = nullptr;
+      auto &span_kind_value = span_kind_tag_iter->second;
+      if (span_kind_value.is<const char *>()) {
+        span_kind = span_kind_value.get<const char *>();
+      } else if (span_kind_value.is<std::string>()) {
+        span_kind = span_kind_value.get<std::string>().data();
+      }
+
+      if (std::strcmp(span_kind, "client") == 0) {
         Annotation client_send{start_timestamp_microsecs, "cs", endpoint_};
         Annotation client_receive{
             start_timestamp_microsecs + duration_microsecs, "cr", endpoint_};
         span_->addAnnotation(std::move(client_send));
         span_->addAnnotation(std::move(client_receive));
-      } else if (span_kind == "server") {
+      } else if (std::strcmp(span_kind, "server") == 0) {
         Annotation server_receive{start_timestamp_microsecs, "sr", endpoint_};
         Annotation server_send{start_timestamp_microsecs + duration_microsecs,
                                "ss", endpoint_};
