@@ -3,6 +3,7 @@
 #include <chrono>
 
 #include "zipkin_core_constants.h"
+#include "zipkin_reporter_impl.h"
 #include <zipkin/utility.h>
 
 namespace zipkin {
@@ -108,7 +109,26 @@ void Tracer::reportSpan(Span &&span) {
   }
 }
 
-void Tracer::setReporter(ReporterPtr reporter) {
-  reporter_ = std::move(reporter);
+uint64_t Tracer::droppedSpanCount() const {
+  return reporter_->droppedSpanCount();
 }
+
+uint64_t Tracer::getAndResetDroppedSpanCount() {
+  return reporter_->getAndResetDroppedSpanCount();
+}
+
+SteadyClock::duration Tracer::reportPeriod() const {
+  return reporter_->reportPeriod();
+}
+
+void Tracer::setReportPeriod(SteadyClock::duration report_period) {
+  reporter_->setReportPeriod(report_period);
+}
+
+size_t Tracer::bufferSpanCount() const { return reporter_->bufferSpanCount(); }
+
+void Tracer::setBufferSpanCount(size_t span_count) {
+  reporter_->setBufferSpanCount(span_count);
+}
+
 } // namespace zipkin

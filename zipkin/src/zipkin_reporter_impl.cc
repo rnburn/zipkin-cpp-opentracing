@@ -21,7 +21,12 @@ void ReporterImpl::reportSpan(const Span &span) {
   bool is_full;
   {
     std::lock_guard<std::mutex> lock(write_mutex_);
-    num_spans_reported_ += spans_.addSpan(span);
+
+    if (spans_.addSpan(span)) {
+      num_spans_reported_++;
+    } else {
+      dropped_span_count_++;
+    }
     is_full = spans_.pendingSpans() == max_buffered_spans_;
   }
   if (is_full)
@@ -39,6 +44,12 @@ bool ReporterImpl::flushWithTimeout(
   return write_cond_.wait_for(lock, timeout, [this, num_spans_snapshot] {
     return this->num_spans_flushed_ >= num_spans_snapshot;
   });
+}
+
+uint64_t ReporterImpl::droppedSpanCount() const { return dropped_span_count_; }
+
+uint64_t ReporterImpl::getAndResetDroppedSpanCount() {
+  return dropped_span_count_.exchange(0);
 }
 
 void ReporterImpl::makeWriterExit() {

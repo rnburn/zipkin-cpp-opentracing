@@ -49,9 +49,46 @@ public:
 
   bool flushWithTimeout(std::chrono::system_clock::duration timeout) override;
 
+  uint64_t droppedSpanCount() const override;
+
+  uint64_t getAndResetDroppedSpanCount() override;
+
+  /**
+   * @brief getReportPeriod Returns the period of time to wait between auto
+   * flushes
+   * @return Setting for the duration between auto flushes
+   */
+  SteadyClock::duration reportPeriod() const override {
+    return reporting_period_;
+  }
+
+  /**
+   * @brief setReportPeriod Adjust the period of time to wait between auto
+   * flushes
+   * @param report_period The new size of the span buffer
+   */
+  void setReportPeriod(SteadyClock::duration reporting_period) override {
+    reporting_period_ = reporting_period;
+  }
+
+  /**
+   * @brief getBufferSpanCount Returns the number of spans that can be stored
+   * @return
+   */
+  size_t bufferSpanCount() const override { return max_buffered_spans_; }
+
+  /**
+   * @brief setBufferSpanCount Adjust the number of spans that can be stored
+   * @param span_count The new size of the span buffer
+   */
+  void setBufferSpanCount(size_t span_count) override {
+    max_buffered_spans_ = span_count;
+  }
+
 private:
   TransporterPtr transporter_;
 
+  std::atomic<uint64_t> dropped_span_count_{0};
   std::mutex write_mutex_;
   std::condition_variable write_cond_;
   SteadyClock::duration reporting_period_;

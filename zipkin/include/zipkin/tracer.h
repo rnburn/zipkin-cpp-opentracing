@@ -40,6 +40,41 @@ public:
   virtual bool flushWithTimeout(std::chrono::system_clock::duration timeout) {
     return true;
   }
+
+  /**
+   * @return the number of spans that have been dropped since this value was
+   * last cleared.
+   */
+  virtual uint64_t droppedSpanCount() const { return 0; }
+
+  /**
+   * In addition to getting the drop count, resets the drop count.
+   * @return the number of spans that have been dropped since this value was
+   * last reset
+   */
+  virtual uint64_t getAndResetDroppedSpanCount() { return 0; }
+
+  /**
+   * @return the period of time to wait between auto flushes
+   */
+  virtual SteadyClock::duration reportPeriod() const {
+    return SteadyClock::duration::zero();
+  }
+
+  /**
+   * @param report_period the period of time to wait between auto flushes
+   */
+  virtual void setReportPeriod(SteadyClock::duration report_period){};
+
+  /**
+   * @return the number of spans that can be stored in the buffer
+   */
+  virtual size_t bufferSpanCount() const { return 0; }
+
+  /**
+   * @param span_count The new size of the span buffer
+   */
+  virtual void setBufferSpanCount(size_t span_count){};
 };
 
 typedef std::unique_ptr<Reporter> ReporterPtr;
@@ -80,8 +115,10 @@ public:
    * @param address Pointer to a network-address object. The IP address and port
    * are used in all annotations' endpoints of the spans created by the Tracer.
    */
-  Tracer(const std::string &service_name, const IpAddress &address)
-      : service_name_(service_name), address_(address), reporter_(nullptr) {}
+  Tracer(const std::string &service_name, const IpAddress &address,
+         ReporterPtr &&reporter)
+      : service_name_(service_name), address_(address),
+        reporter_(std::move(reporter)) {}
 
   /**
    * Creates a "root" Zipkin span.
@@ -119,9 +156,37 @@ public:
   const IpAddress &address() const { return address_; }
 
   /**
-   * Associates a Reporter object with this Tracer.
+   * @return the number of spans that have been dropped since this value was
+   * last cleared.
    */
-  void setReporter(ReporterPtr reporter);
+  uint64_t droppedSpanCount() const;
+
+  /**
+   * In addition to getting the drop count, resets the drop count.
+   * @return the number of spans that have been dropped since this value was
+   * last reset
+   */
+  uint64_t getAndResetDroppedSpanCount();
+
+  /**
+   * @return the period of time to wait between auto flushes
+   */
+  SteadyClock::duration reportPeriod() const;
+
+  /**
+   * @param report_period the period of time to wait between auto flushes
+   */
+  void setReportPeriod(SteadyClock::duration report_period);
+
+  /**
+   * @return the number of spans that can be stored in the buffer
+   */
+  size_t bufferSpanCount() const;
+
+  /**
+   * @param span_count The new size of the span buffer
+   */
+  void setBufferSpanCount(size_t span_count);
 
   /**
    * Optional method that a concrete Reporter class can implement to flush

@@ -268,110 +268,105 @@ private:
   SpanPtr span_;
 };
 
-class OtTracer : public ot::Tracer,
-                 public std::enable_shared_from_this<OtTracer> {
-public:
-  explicit OtTracer(TracerPtr &&tracer) : tracer_{std::move(tracer)} {}
+OtTracer::OtTracer(TracerPtr &&tracer) : tracer_{std::move(tracer)} {}
 
-  std::unique_ptr<ot::Span>
-  StartSpanWithOptions(string_view operation_name,
-                       const ot::StartSpanOptions &options) const
-      noexcept override {
-    // Create the core zipkin span.
-    SpanPtr span{new zipkin::Span{}};
-    span->setName(operation_name);
-    span->setTracer(tracer_.get());
+std::unique_ptr<ot::Span>
+OtTracer::StartSpanWithOptions(string_view operation_name,
+                               const ot::StartSpanOptions &options) const
+    noexcept {
+  // Create the core zipkin span.
+  SpanPtr span{new zipkin::Span{}};
+  span->setName(operation_name);
+  span->setTracer(tracer_.get());
 
-    Endpoint endpoint{tracer_->serviceName(), tracer_->address()};
+  Endpoint endpoint{tracer_->serviceName(), tracer_->address()};
 
-    // Add a binary annotation for the serviceName.
-    BinaryAnnotation service_name_annotation{"lc", tracer_->serviceName()};
-    service_name_annotation.setEndpoint(endpoint);
-    span->addBinaryAnnotation(std::move(service_name_annotation));
+  // Add a binary annotation for the serviceName.
+  BinaryAnnotation service_name_annotation{"lc", tracer_->serviceName()};
+  service_name_annotation.setEndpoint(endpoint);
+  span->addBinaryAnnotation(std::move(service_name_annotation));
 
-    return std::unique_ptr<ot::Span>{new OtSpan{
-        shared_from_this(), std::move(span), std::move(endpoint), options}};
+  return std::unique_ptr<ot::Span>{new OtSpan{
+      shared_from_this(), std::move(span), std::move(endpoint), options}};
+}
+
+opentracing::expected<void> OtTracer::Inject(const opentracing::SpanContext &sc,
+                                             std::ostream &writer) const {
+  return InjectImpl(sc, writer);
+}
+
+opentracing::expected<void>
+OtTracer::Inject(const opentracing::SpanContext &sc,
+                 const opentracing::TextMapWriter &writer) const {
+  return InjectImpl(sc, writer);
+}
+
+opentracing::expected<void>
+OtTracer::Inject(const opentracing::SpanContext &sc,
+                 const opentracing::HTTPHeadersWriter &writer) const {
+  return InjectImpl(sc, writer);
+}
+
+opentracing::expected<std::unique_ptr<opentracing::SpanContext>>
+OtTracer::Extract(std::istream &reader) const {
+  return ExtractImpl(reader);
+}
+
+opentracing::expected<std::unique_ptr<opentracing::SpanContext>>
+OtTracer::Extract(const opentracing::TextMapReader &reader) const {
+  return ExtractImpl(reader);
+}
+
+opentracing::expected<std::unique_ptr<opentracing::SpanContext>>
+OtTracer::Extract(const opentracing::HTTPHeadersReader &reader) const {
+  return ExtractImpl(reader);
+}
+
+void OtTracer::Close() noexcept {
+  tracer_->flushWithTimeout(std::chrono::hours{24});
+}
+
+template <class Carrier>
+expected<void> OtTracer::InjectImpl(const ot::SpanContext &sc,
+                                    Carrier &writer) const try {
+  auto ot_span_context = dynamic_cast<const OtSpanContext *>(&sc);
+  if (ot_span_context == nullptr) {
+    return make_unexpected(ot::invalid_span_context_error);
   }
+  return ot_span_context->Inject(writer);
+} catch (const std::bad_alloc &) {
+  return ot::make_unexpected(
+      std::make_error_code(std::errc::not_enough_memory));
+}
 
-  expected<void> Inject(const ot::SpanContext &sc,
-                        std::ostream &writer) const override {
-    return InjectImpl(sc, writer);
+template <class Carrier>
+expected<std::unique_ptr<ot::SpanContext>>
+OtTracer::ExtractImpl(Carrier &reader) const try {
+  std::unordered_map<std::string, std::string> baggage;
+  auto zipkin_span_context_maybe = extractSpanContext(reader, baggage);
+  if (!zipkin_span_context_maybe) {
+    return ot::make_unexpected(zipkin_span_context_maybe.error());
   }
-
-  expected<void> Inject(const ot::SpanContext &sc,
-                        const ot::TextMapWriter &writer) const override {
-    return InjectImpl(sc, writer);
+  if (!zipkin_span_context_maybe->valid()) {
+    return std::unique_ptr<ot::SpanContext>{};
   }
-
-  expected<void> Inject(const ot::SpanContext &sc,
-                        const ot::HTTPHeadersWriter &writer) const override {
-    return InjectImpl(sc, writer);
-  }
-
-  expected<std::unique_ptr<ot::SpanContext>>
-  Extract(std::istream &reader) const override {
-    return ExtractImpl(reader);
-  }
-
-  expected<std::unique_ptr<ot::SpanContext>>
-  Extract(const ot::TextMapReader &reader) const override {
-    return ExtractImpl(reader);
-  }
-
-  expected<std::unique_ptr<ot::SpanContext>>
-  Extract(const ot::HTTPHeadersReader &reader) const override {
-    return ExtractImpl(reader);
-  }
-
-  void Close() noexcept override {
-    tracer_->flushWithTimeout(std::chrono::hours{24});
-  }
-
-private:
-  TracerPtr tracer_;
-
-  template <class Carrier>
-  expected<void> InjectImpl(const ot::SpanContext &sc, Carrier &writer) const
-      try {
-    auto ot_span_context = dynamic_cast<const OtSpanContext *>(&sc);
-    if (ot_span_context == nullptr) {
-      return make_unexpected(ot::invalid_span_context_error);
-    }
-    return ot_span_context->Inject(writer);
-  } catch (const std::bad_alloc &) {
-    return ot::make_unexpected(
-        std::make_error_code(std::errc::not_enough_memory));
-  }
-
-  template <class Carrier>
-  expected<std::unique_ptr<ot::SpanContext>> ExtractImpl(Carrier &reader) const
-      try {
-    std::unordered_map<std::string, std::string> baggage;
-    auto zipkin_span_context_maybe = extractSpanContext(reader, baggage);
-    if (!zipkin_span_context_maybe) {
-      return ot::make_unexpected(zipkin_span_context_maybe.error());
-    }
-    if (!zipkin_span_context_maybe->valid()) {
-      return std::unique_ptr<ot::SpanContext>{};
-    }
-    std::unique_ptr<ot::SpanContext> span_context{new OtSpanContext(
-        std::move(zipkin_span_context_maybe->value()), std::move(baggage))};
-    return std::move(span_context);
-  } catch (const std::bad_alloc &) {
-    return ot::make_unexpected(
-        std::make_error_code(std::errc::not_enough_memory));
-  }
-};
+  std::unique_ptr<ot::SpanContext> span_context{new OtSpanContext(
+      std::move(zipkin_span_context_maybe->value()), std::move(baggage))};
+  return std::move(span_context);
+} catch (const std::bad_alloc &) {
+  return ot::make_unexpected(
+      std::make_error_code(std::errc::not_enough_memory));
+}
 
 std::shared_ptr<opentracing::Tracer>
 makeZipkinOtTracer(const ZipkinOtTracerOptions &options,
                    std::unique_ptr<Reporter> &&reporter) {
-  TracerPtr tracer{new Tracer{options.service_name, options.service_address}};
-  tracer->setReporter(std::move(reporter));
-  return std::shared_ptr<ot::Tracer>{new OtTracer{std::move(tracer)}};
+  TracerPtr tracer{new Tracer{options.service_name, options.service_address,
+                              std::move(reporter)}};
+  return std::shared_ptr<OtTracer>{new OtTracer{std::move(tracer)}};
 }
 
-std::shared_ptr<ot::Tracer>
+std::shared_ptr<opentracing::Tracer>
 makeZipkinOtTracer(const ZipkinOtTracerOptions &options) {
   auto reporter =
       makeHttpReporter(options.collector_host.c_str(), options.collector_port,
