@@ -10,10 +10,10 @@
 #include <zipkin/utility.h>
 #include <zipkin/zipkin_core_types.h>
 
-using opentracing::string_view;
 using opentracing::Value;
 using opentracing::expected;
 using opentracing::make_unexpected;
+using opentracing::string_view;
 
 namespace ot = opentracing;
 
@@ -374,7 +374,8 @@ makeZipkinOtTracer(const ZipkinOtTracerOptions &options,
 std::shared_ptr<ot::Tracer>
 makeZipkinOtTracer(const ZipkinOtTracerOptions &options) {
   auto reporter =
-      makeHttpReporter(options.collector_host.c_str(), options.collector_port);
+      makeHttpReporter(options.collector_host.c_str(), options.collector_port,
+                       options.reporting_period, options.max_buffered_spans);
   return makeZipkinOtTracer(options, std::move(reporter));
 }
 } // namespace zipkin

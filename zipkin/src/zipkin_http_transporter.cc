@@ -52,10 +52,13 @@ void ZipkinHttpTransporter::transportSpans(SpanBuffer &spans) try {
 }
 
 ReporterPtr makeHttpReporter(const char *collector_host,
-                             uint32_t collector_port) try {
+                             uint32_t collector_port,
+                             SteadyClock::duration reporting_period,
+                             size_t max_buffered_spans) try {
   std::unique_ptr<Transporter> transporter{
       new ZipkinHttpTransporter{collector_host, collector_port}};
-  std::unique_ptr<Reporter> reporter{new ReporterImpl{std::move(transporter)}};
+  std::unique_ptr<Reporter> reporter{new ReporterImpl{
+      std::move(transporter), reporting_period, max_buffered_spans}};
   return reporter;
 } catch (const CurlError &error) {
   std::cerr << error.what() << '\n';

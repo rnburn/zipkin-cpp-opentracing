@@ -28,7 +28,10 @@ public:
    *
    * @param transporter The Transporter to be associated with the reporter.
    */
-  explicit ReporterImpl(TransporterPtr &&transporter);
+  ReporterImpl(
+      TransporterPtr &&transporter,
+      SteadyClock::duration reporting_period = DEFAULT_REPORTING_PERIOD,
+      size_t max_buffered_spans = DEFAULT_SPAN_BUFFER_SIZE);
 
   /**
    * Destructor.
@@ -51,6 +54,9 @@ private:
 
   std::mutex write_mutex_;
   std::condition_variable write_cond_;
+  SteadyClock::duration reporting_period_;
+  size_t max_buffered_spans_;
+
   bool write_exit_ = false;
   std::thread writer_;
   int64_t num_spans_reported_ = 0;

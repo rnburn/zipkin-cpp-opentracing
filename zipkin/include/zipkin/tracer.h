@@ -6,6 +6,9 @@
 #include <zipkin/zipkin_core_types.h>
 
 namespace zipkin {
+const SteadyClock::duration DEFAULT_REPORTING_PERIOD =
+    std::chrono::milliseconds{500};
+const size_t DEFAULT_SPAN_BUFFER_SIZE = 1000;
 
 /**
  * Abstract class that delegates to users of the Tracer class the responsibility
@@ -50,8 +53,10 @@ typedef std::unique_ptr<Reporter> ReporterPtr;
  * service.
  * @return a Reporter object.
  */
-ReporterPtr makeHttpReporter(const char *collector_host,
-                             uint32_t collector_port);
+ReporterPtr makeHttpReporter(
+    const char *collector_host, uint32_t collector_port,
+    SteadyClock::duration reporting_period = DEFAULT_REPORTING_PERIOD,
+    size_t max_buffered_spans = DEFAULT_SPAN_BUFFER_SIZE);
 
 /**
  * This class implements the Zipkin tracer. It has methods to create the

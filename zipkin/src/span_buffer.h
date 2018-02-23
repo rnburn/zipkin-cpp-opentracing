@@ -41,6 +41,12 @@ public:
   bool addSpan(const Span &span);
 
   /**
+   * @return returns the number of spans that can be held in currently allocated
+   * storage.
+   */
+  uint64_t spanCapacity() const { return span_buffer_.capacity(); }
+
+  /**
    * Empties the buffer. This method is supposed to be called when all buffered
    * spans have been sent to to the Zipkin service.
    */
