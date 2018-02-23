@@ -3,11 +3,11 @@
 
 namespace zipkin {
 
-const SteadyClock::duration reporting_period = std::chrono::milliseconds{500};
-const size_t max_buffered_spans = 1000;
-
-ReporterImpl::ReporterImpl(TransporterPtr &&transporter)
-    : transporter_{std::move(transporter)}, spans_{max_buffered_spans},
+ReporterImpl::ReporterImpl(TransporterPtr &&transporter,
+                           std::chrono::steady_clock::duration reporting_period,
+                           size_t max_buffered_spans)
+    : transporter_{std::move(transporter)}, reporting_period_(reporting_period),
+      max_buffered_spans_(max_buffered_spans), spans_{max_buffered_spans},
       inflight_spans_{max_buffered_spans} {
   writer_ = std::thread(&ReporterImpl::writeReports, this);
 }
@@ -22,7 +22,7 @@ void ReporterImpl::reportSpan(const Span &span) {
   {
     std::lock_guard<std::mutex> lock(write_mutex_);
     num_spans_reported_ += spans_.addSpan(span);
-    is_full = spans_.pendingSpans() == max_buffered_spans;
+    is_full = spans_.pendingSpans() == max_buffered_spans_;
   }
   if (is_full)
     write_cond_.notify_one();
@@ -57,16 +57,22 @@ bool ReporterImpl::waitUntilNextReport(const SteadyTime &due_time) {
 }
 
 void ReporterImpl::writeReports() {
-  auto due_time = std::chrono::steady_clock::now() + reporting_period;
+  auto due_time = std::chrono::steady_clock::now() + reporting_period_;
   while (waitUntilNextReport(due_time)) {
     if (inflight_spans_.pendingSpans() > 0) {
       transporter_->transportSpans(inflight_spans_);
       num_spans_flushed_ += inflight_spans_.pendingSpans();
       inflight_spans_.clear();
+
+      // If the buffer capacity has been changed, this is the place to resize
+      // it.
+      if (inflight_spans_.spanCapacity() != max_buffered_spans_) {
+        inflight_spans_.allocateBuffer(max_buffered_spans_);
+      }
       write_cond_.notify_all();
     }
     auto now = std::chrono::steady_clock::now();
-    due_time += reporting_period;
+    due_time += reporting_period_;
     if (due_time < now)
       due_time = now;
   }
