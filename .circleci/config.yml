@@ -6,9 +6,10 @@ jobs:
     steps:
       - run:
           name: Install libcurl
-          command: apt-get update && apt-get install --no-install-recommends \
-                                             --no-install-suggests -y \
-                                             libcurl4-openssl-dev
+          command: >
+            apt-get update 
+         && apt-get install --no-install-recommends --no-install-suggests -y
+                            libcurl4-openssl-dev
       - run:
           name: Print the Current Time
           command: date
