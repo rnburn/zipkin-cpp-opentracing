@@ -21,7 +21,7 @@ jobs:
             git clone https://github.com/opentracing/opentracing-cpp.git
             cd opentracing-cpp
             mkdir .build && cd .build
-            cmake ..
+            cmake -DBUILD_TESTING=OFF ..
             make && make install
             cd /
       - checkout
@@ -30,7 +30,7 @@ jobs:
           command: mkdir .build && cd .build && cmake ..
       - run:
           name: Build
-          command: make
+          command: cd .build && make
       - run:
           name: Test
-          command: make test
+          command: cd .build && make test
