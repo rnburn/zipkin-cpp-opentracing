@@ -11,7 +11,9 @@ jobs:
             apt-get install --no-install-recommends --no-install-suggests -y \
                             libcurl4-openssl-dev \
                             build-essential \
-                            cmake
+                            cmake \
+                            git \
+                            ca-certificates
       - run:
           name: Install OpenTracing
           command: |
