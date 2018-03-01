@@ -1,0 +1,24 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: debian:stretch
+    steps:
+      - run:
+          name: Install libcurl
+          command: apt-get update && apt-get install --no-install-recommends \
+                                             --no-install-suggests -y \
+                                             libcurl4-openssl-dev
+      - run:
+          name: Print the Current Time
+          command: date
+      - checkout
+      - run:
+          name: Run CMake
+          command: mkdir .build && cd .build && cmake ..
+      - run:
+          name: Build
+          command: make
+      - run:
+          name: Test
+          command: make test
