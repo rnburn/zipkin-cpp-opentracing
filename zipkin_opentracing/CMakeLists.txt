@@ -6,6 +6,8 @@ include_directories(SYSTEM ${OPENTRACING_INCLUDE_DIR})
 install(DIRECTORY include/zipkin DESTINATION include)
 set(ZIPKIN_OPENTRACING_SRCS src/utility.cc
                             src/propagation.cc
+                            src/dynamic_load.cc
+                            src/tracer_factory.cc
                             src/opentracing.cc)
 
 add_library(zipkin_opentracing SHARED ${ZIPKIN_OPENTRACING_SRCS})

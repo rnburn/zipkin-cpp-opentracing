@@ -8,3 +8,4 @@ macro(_zipkin_ot_test TEST_NAME)
 endmacro()
 
 _zipkin_ot_test(ot_tracer_test ot_tracer_test.cc)
+_zipkin_ot_test(ot_tracer_factory_test ot_tracer_factory_test.cc)
