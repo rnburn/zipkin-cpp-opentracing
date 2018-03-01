@@ -9,10 +9,8 @@ jobs:
           command: |
             apt-get update 
             apt-get install --no-install-recommends --no-install-suggests -y \
-                            libcurl4-openssl-dev
-      - run:
-          name: Print the Current Time
-          command: date
+                            libcurl4-openssl-dev \
+                            cmake
       - checkout
       - run:
           name: Run CMake
