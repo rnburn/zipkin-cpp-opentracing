@@ -12,6 +12,16 @@ jobs:
                             libcurl4-openssl-dev \
                             build-essential \
                             cmake
+      - run:
+          name: Install OpenTracing
+          command: |
+            cd /
+            git clone https://github.com/opentracing/opentracing-cpp.git
+            cd opentracing-cpp
+            mkdir .build && cd .build
+            cmake ..
+            make && make install
+            cd /
       - checkout
       - run:
           name: Run CMake
