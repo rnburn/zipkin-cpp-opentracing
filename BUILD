@@ -12,7 +12,7 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         ":rapidjson",
-        "@se_haxx_curl_libcurl",
+        "@se_haxx_curl_libcurl:curl",
     ]
 )
 
