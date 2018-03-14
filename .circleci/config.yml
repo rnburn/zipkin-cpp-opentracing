@@ -7,9 +7,17 @@ jobs:
       - checkout
       - run: ./ci/install_dependencies.sh
       - run: ./ci/do_ci.sh cmake.asan
+  tsan:
+    docker:
+      - image: ubuntu:17.10
+    steps:
+      - checkout
+      - run: ./ci/install_dependencies.sh
+      - run: ./ci/do_ci.sh cmake.tsan
 
 workflows:
   version: 2
   all:
     jobs:
       - asan
+      - tsan
