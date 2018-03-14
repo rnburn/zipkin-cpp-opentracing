@@ -15,7 +15,6 @@ elif [[ "$1" == "cmake.asan" ]]; then
   cd "${BUILD_DIR}"
   cmake -DCMAKE_BUILD_TYPE=Debug  \
         -DCMAKE_CXX_FLAGS="-fno-omit-frame-pointer -fsanitize=address"  \
-        -DCMAKE_STATIC_LINKER_FLAGS="-fno-omit-frame-pointer -fsanitize=address" \
         -DCMAKE_SHARED_LINKER_FLAGS="-fno-omit-frame-pointer -fsanitize=address" \
         -DCMAKE_EXE_LINKER_FLAGS="-fno-omit-frame-pointer -fsanitize=address" \
         "${SRC_DIR}"
