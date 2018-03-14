@@ -32,7 +32,8 @@ elif [[ "$1" == "cmake.tsan" ]]; then
   make test
   exit 0
 elif [[ "$1" == "bazel.build" ]]; then
-  bazel build --package_path=%workspace%:"${SRC_DIR}/ci" //...
+  cd ci
+  bazel build --package_path=%workspace%:"${SRC_DIR}" //...
   exit 0
 elif [[ "$1" == "cmake.plugin" ]]; then
   exit 0
