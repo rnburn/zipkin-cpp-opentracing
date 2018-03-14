@@ -2,7 +2,7 @@ version: 2
 jobs:
   asan:
     docker:
-      - image: debian:stretch
+      - image: ubuntu:17.10
     steps:
       - checkout
       - run: ./ci/install_dependencies.sh
