@@ -7,3 +7,8 @@ jobs:
       - checkout
       - run: ./ci/install_dependencies.sh
       - run: ./ci/do_ci.sh cmake.asan
+
+workflows:
+  version: 2
+  all:
+    - asan
