@@ -1,6 +1,6 @@
 cc_library(
   name = "curl",
-  srcs = "lib/x86_64-linux-gnu/libcurl.a"
+  srcs = "lib/x86_64-linux-gnu/libcurl.a",
   hdrs = glob(["include/x86_64-linux-gnu/curl/*.h"]),
   strip_include_prefix = "include/x86_64-linux-gnu/curl",
   visibility = ["//visibility:public"],
