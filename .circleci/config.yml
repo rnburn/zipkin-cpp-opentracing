@@ -14,6 +14,13 @@ jobs:
       - checkout
       - run: ./ci/install_dependencies.sh
       - run: ./ci/do_ci.sh cmake.tsan
+  bazel:
+    docker:
+      - image: ubuntu:17.10
+    steps:
+      - checkout
+      - run: ./ci/install_dependencies.sh
+      - run: ./ci/do_ci.sh bazel.build
 
 workflows:
   version: 2
@@ -21,3 +28,4 @@ workflows:
     jobs:
       - asan
       - tsan
+      - bazel
