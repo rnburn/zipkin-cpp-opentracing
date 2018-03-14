@@ -1,9 +1,9 @@
 version: 2
 jobs:
-  build:
+  asan:
     docker:
       - image: debian:stretch
     steps:
       - checkout
       - run: ./ci/install_dependencies.sh
-      - run: ./ci/do_ci.sh cmake.test
+      - run: ./ci/do_ci.sh cmake.asan
