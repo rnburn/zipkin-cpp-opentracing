@@ -27,3 +27,18 @@ cc_library(
         "@io_opentracing_cpp//:opentracing"
     ]
 )
+
+cc_binary(
+    name = "zipkin_opentracing_plugin.so",
+    linkshared = 1,
+    visibility = ["//visibility:public"],
+    linkopts = [
+        "-static",
+        "-static-libstdc++",
+        "-static-libgcc",
+    ],
+    deps = [
+        "//:zipkin_opentracing"
+    ],
+)
+
