@@ -17,7 +17,7 @@ if [[ "$1" == "cmake.asan" ]]; then
         -DCMAKE_CXX_FLAGS="-fno-omit-frame-pointer -fsanitize=address"  \
         -DCMAKE_STATIC_LINKER_FLAGS="-fno-omit-frame-pointer -fsanitize=address" \
         -DCMAKE_SHARED_LINKER_FLAGS="-fno-omit-frame-pointer -fsanitize=address" \
-        "${SRC_DIR}" \
+        "${SRC_DIR}"
   make
   make test
   exit 0
