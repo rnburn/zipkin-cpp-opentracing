@@ -18,7 +18,7 @@ elif [[ "$1" == "cmake.asan" ]]; then
         -DCMAKE_STATIC_LINKER_FLAGS="-fsanitize=address" \
         -DCMAKE_SHARED_LINKER_FLAGS="-fsanitize=address" \
         "${SRC_DIR}"
-  make
+  make VERBOSE=1
   make test
   exit 0
 elif [[ "$1" == "cmake.plugin" ]]; then
