@@ -11,7 +11,7 @@ if [[ "$1" == "cmake.test" ]]; then
   make
   make test
   exit 0
-if [[ "$1" == "cmake.asan" ]]; then
+elif [[ "$1" == "cmake.asan" ]]; then
   cd "${BUILD_DIR}"
   cmake -DCMAKE_BUILD_TYPE=Debug  \
         -DCMAKE_CXX_FLAGS="-fno-omit-frame-pointer -fsanitize=address"  \
