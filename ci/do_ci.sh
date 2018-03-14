@@ -24,9 +24,9 @@ elif [[ "$1" == "cmake.asan" ]]; then
 elif [[ "$1" == "cmake.tsan" ]]; then
   cd "${BUILD_DIR}"
   cmake -DCMAKE_BUILD_TYPE=Debug  \
-        -DCMAKE_CXX_FLAGS="-fno-omit-frame-pointer -fsanitize=thead"  \
-        -DCMAKE_SHARED_LINKER_FLAGS="-fno-omit-frame-pointer -fsanitize=thead" \
-        -DCMAKE_EXE_LINKER_FLAGS="-fno-omit-frame-pointer -fsanitize=thead" \
+        -DCMAKE_CXX_FLAGS="-fno-omit-frame-pointer -fsanitize=thread"  \
+        -DCMAKE_SHARED_LINKER_FLAGS="-fno-omit-frame-pointer -fsanitize=thread" \
+        -DCMAKE_EXE_LINKER_FLAGS="-fno-omit-frame-pointer -fsanitize=thread" \
         "${SRC_DIR}"
   make VERBOSE=1
   make test
