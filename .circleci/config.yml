@@ -4,33 +4,5 @@ jobs:
     docker:
       - image: debian:stretch
     steps:
-      - run:
-          name: Install libcurl
-          command: |
-            apt-get update 
-            apt-get install --no-install-recommends --no-install-suggests -y \
-                            libcurl4-openssl-dev \
-                            build-essential \
-                            cmake \
-                            git \
-                            ca-certificates
-      - run:
-          name: Install OpenTracing
-          command: |
-            cd /
-            git clone https://github.com/opentracing/opentracing-cpp.git
-            cd opentracing-cpp
-            mkdir .build && cd .build
-            cmake -DBUILD_TESTING=OFF ..
-            make && make install
-            cd /
-      - checkout
-      - run:
-          name: Run CMake
-          command: mkdir .build && cd .build && cmake ..
-      - run:
-          name: Build
-          command: cd .build && make
-      - run:
-          name: Test
-          command: cd .build && make test
+      - run: ./ci/install_dependencies.sh
+      - run: ./ci/do_ci.sh cmake.test
