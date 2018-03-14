@@ -4,5 +4,6 @@ jobs:
     docker:
       - image: debian:stretch
     steps:
+      - checkout
       - run: ./ci/install_dependencies.sh
       - run: ./ci/do_ci.sh cmake.test
