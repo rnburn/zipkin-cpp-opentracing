@@ -21,7 +21,7 @@ endif()
 if (BUILD_STATIC_LIBS)
   add_library(zipkin-static STATIC ${ZIPKIN_SRCS})
   set_target_properties(zipkin-static PROPERTIES OUTPUT_NAME zipkin)
-  target_link_libraries(zipkin Threads::Threads ${CURL_LIBRARIES})
+  target_link_libraries(zipkin-static Threads::Threads ${CURL_LIBRARIES})
   install(TARGETS zipkin-static
           ARCHIVE DESTINATION lib)
 endif()
