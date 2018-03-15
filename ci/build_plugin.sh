@@ -21,3 +21,11 @@ cmake -DCMAKE_BUILD_TYPE=Release \
       -DBUILD_MOCKTRACER=OFF \
       ..
 make && make install
+
+# Build zipkin
+cd "${BUILD_DIR}"
+mkdir zipkin-cpp-opentracing && cd zipkin-cpp-opentracing
+#cmake -DCMAKE_BUILD_TYPE=Release \
+#      
+#cd "${SRC_DIR}"
+#mkdir .build && cd .build

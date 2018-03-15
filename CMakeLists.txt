@@ -8,6 +8,13 @@ set(ZIPKIN_VERSION_PATCH "0")
 set(ZIPKIN_VERSION_STRING
   "${ZIPKIN_VERSION_MAJOR}.${ZIPKIN_VERSION_MINOR}.${ZIPKIN_VERSION_PATCH}")
 
+option(BUILD_SHARED_LIBS "Build as a shared library" ON)
+option(BUILD_STATIC_LIBS "Build as a static library" ON)
+
+if (NOT BUILD_SHARED_LIBS AND NOT BUILD_STATIC_LIBS)
+    message(FATAL_ERROR "One or both of BUILD_SHARED_LIBS or BUILD_STATIC_LIBS must be set to ON to build")
+endif()
+
 set(CMAKE_CXX_STANDARD 11)
 include(CTest)
 

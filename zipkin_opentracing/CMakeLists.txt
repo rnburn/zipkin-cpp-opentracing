@@ -10,18 +10,23 @@ set(ZIPKIN_OPENTRACING_SRCS src/utility.cc
                             src/tracer_factory.cc
                             src/opentracing.cc)
 
-add_library(zipkin_opentracing SHARED ${ZIPKIN_OPENTRACING_SRCS})
-target_link_libraries(zipkin_opentracing ${OPENTRACING_LIB} zipkin)
-set_target_properties(zipkin_opentracing PROPERTIES VERSION ${ZIPKIN_VERSION_STRING}
-                                                    SOVERSION ${ZIPKIN_VERSION_MAJOR})
+if (BUILD_SHARED_LIBS)               
+  add_library(zipkin_opentracing SHARED ${ZIPKIN_OPENTRACING_SRCS})
+  target_link_libraries(zipkin_opentracing ${OPENTRACING_LIB} zipkin)
+  set_target_properties(zipkin_opentracing PROPERTIES VERSION ${ZIPKIN_VERSION_STRING}
+                                                      SOVERSION ${ZIPKIN_VERSION_MAJOR})
+  install(TARGETS zipkin_opentracing 
+          LIBRARY DESTINATION lib)
+endif()
 
-add_library(zipkin_opentracing-static STATIC ${ZIPKIN_OPENTRACING_SRCS})
-set_target_properties(zipkin_opentracing-static PROPERTIES OUTPUT_NAME zipkin_opentracing)
-target_link_libraries(zipkin_opentracing-static ${OPENTRACING_LIB} zipkin)
+if (BUILD_STATIC_LIBS)
+  add_library(zipkin_opentracing-static STATIC ${ZIPKIN_OPENTRACING_SRCS})
+  set_target_properties(zipkin_opentracing-static PROPERTIES OUTPUT_NAME zipkin_opentracing)
+  target_link_libraries(zipkin_opentracing-static ${OPENTRACING_LIB} zipkin)
+  install(TARGETS zipkin_opentracing-static
+          ARCHIVE DESTINATION lib)
+endif()
 
-install(TARGETS zipkin_opentracing zipkin_opentracing-static
-        LIBRARY DESTINATION lib
-        ARCHIVE DESTINATION lib)
 
 add_subdirectory(example)
 if(BUILD_TESTING)
