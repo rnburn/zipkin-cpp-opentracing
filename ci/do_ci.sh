@@ -36,6 +36,7 @@ elif [[ "$1" == "bazel.build" ]]; then
   bazel build -s --package_path=%workspace%:"${SRC_DIR}" //...
   exit 0
 elif [[ "$1" == "cmake.plugin" ]]; then
+  "${SRC_DIR}"/ci//build_plugin.sh
   exit 0
 else
   echo "Invalid do_ci.sh target"

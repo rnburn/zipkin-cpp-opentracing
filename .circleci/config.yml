@@ -21,6 +21,12 @@ jobs:
       - checkout
       - run: ./ci/install_dependencies.sh
       - run: ./ci/do_ci.sh bazel.build
+  plugin:
+    docker:
+      - image: ubuntu:17.10
+    steps:
+      - checkout
+      - run: ./ci/do_ci.sh cmake.plugin
 
 workflows:
   version: 2
@@ -29,3 +35,4 @@ workflows:
       - asan
       - tsan
       - bazel
+      - plugin
