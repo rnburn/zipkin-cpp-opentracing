@@ -44,7 +44,8 @@ all:
 			-Wl,--whole-archive \
 			${BUILD_DIR}/lib/libzipkin_opentracing.a \
 			-Wl,--no-whole-archive \
-			${BUILD_DIR}/lib/libzipkin.a 
+			${BUILD_DIR}/lib/libzipkin.a \
+			/usr/lib/x86_64-linux-gnu/libcurl.a
 EOF
 make
 cp libzipkin_opentracing_plugin.so /
