@@ -20,6 +20,7 @@ jobs:
     steps:
       - checkout
       - run: ./ci/install_dependencies.sh
+      - run: ./ci/install_bazel.sh
       - run: ./ci/do_ci.sh bazel.build
   plugin:
     docker:
