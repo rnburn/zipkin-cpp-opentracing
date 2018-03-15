@@ -38,7 +38,13 @@ make && make install
 cd "${BUILD_DIR}"
 mkdir zipkin-opentracing-plugin && cd zipkin-opentracing-plugin
 cat <<EOF > dummy.c
-void dummysymbol() {}
+int __attribute((weak))
+OpenTracingMakeTracerFactory(const char* opentracing_version,
+                             const void** error_category,
+                             void** tracer_factory);
+void dummysymbol() {
+	OpenTracingMakeTracerFactory(NULL, NULL, NULL);
+}
 EOF
 cat <<EOF > Makefile
 all:
