@@ -43,3 +43,4 @@ all:
       -shared -o zipkin_opentracing_plugin.so
 EOF
 make
+cp zipkin_opentracing_plugin.so /

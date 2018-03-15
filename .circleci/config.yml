@@ -29,7 +29,7 @@ jobs:
       - checkout
       - run: ./ci/do_ci.sh cmake.plugin
       - store_artifacts:
-          path: "${BUILD_DIR}"/zipkin-opentracing-plugin/zipkin_opentracing_plugin.so
+          path: /zipkin_opentracing_plugin.so
           destination: zipkin_opentracing_plugin.so
 
 workflows:
