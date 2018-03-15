@@ -37,9 +37,17 @@ make && make install
 # Create a plugin
 cd "${BUILD_DIR}"
 mkdir zipkin-opentracing-plugin && cd zipkin-opentracing-plugin
+cat <<EOF > export.map
+{
+  global:
+    OpenTracingMakeTracerFactory;
+  local: *;
+};
+EOF
 cat <<EOF > Makefile
 all:
 	gcc -shared -o libzipkin_opentracing_plugin.so \
+      -Wl,--version-script=export.map \
 			-L${BUILD_DIR}/lib \
 			-Wl,--whole-archive \
 			${BUILD_DIR}/lib/libzipkin_opentracing.a \
