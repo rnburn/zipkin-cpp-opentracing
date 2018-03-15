@@ -10,7 +10,6 @@ cc_library(
     hdrs = glob(["zipkin/include/zipkin/*.h"]),
     strip_include_prefix = "zipkin/include",
     visibility = ["//visibility:public"],
-    copts = ["-fPIC"],
     deps = [
         ":rapidjson",
         "@se_haxx_curl_libcurl//:curl",
@@ -23,24 +22,8 @@ cc_library(
     hdrs = glob(["zipkin_opentracing/include/zipkin/*.h"]),
     strip_include_prefix = "zipkin_opentracing/include",
     visibility = ["//visibility:public"],
-    copts = ["-fPIC"],
     deps = [
         ":zipkin",
         "@io_opentracing_cpp//:opentracing"
     ]
 )
-
-cc_binary(
-    name = "zipkin_opentracing_plugin.so",
-    linkshared = 1,
-    visibility = ["//visibility:public"],
-    linkopts = [
-        "-static",
-        "-static-libstdc++",
-        "-static-libgcc",
-    ],
-    deps = [
-        "//:zipkin_opentracing"
-    ],
-)
-
