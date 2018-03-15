@@ -28,7 +28,7 @@ if (BUILD_STATIC_LIBS)
 endif()
 
 
-add_subdirectory(example)
-if(BUILD_TESTING)
+if(BUILD_SHARED_LIBS AND BUILD_TESTING)
+  add_subdirectory(example)
   add_subdirectory(test)
 endif()
