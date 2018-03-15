@@ -50,7 +50,9 @@ cat <<EOF > Makefile
 all:
 	gcc -shared -o libzipkin_opentracing_plugin.so \
 			dummy.c \
-			-L${BUILD_DIR}/lib -lzipkin_opentracing
+			-Wl,--whole-archive \
+			-L${BUILD_DIR}/lib \
+			-lzipkin_opentracing
 EOF
 make
 cp libzipkin_opentracing_plugin.so /
