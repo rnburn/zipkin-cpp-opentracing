@@ -38,12 +38,11 @@ make && make install
 cd "${BUILD_DIR}"
 mkdir zipkin-opentracing-plugin && cd zipkin-opentracing-plugin
 cat <<EOF > dummy.c
+void f() {}
 EOF
 cat <<EOF > Makefile
 all:
-	g++ -shared -o libzipkin_opentracing_plugin.so dummy.c \
-			-L${BUILD_DIR}/lib
-			-lzipkin_opentracing
+	g++ -shared -o libzipkin_opentracing_plugin.so dummy.c
 EOF
 make
 cp libzipkin_opentracing_plugin.so /
