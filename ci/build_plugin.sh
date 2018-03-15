@@ -41,9 +41,9 @@ cat <<EOF > dummy.c
 EOF
 cat <<EOF > Makefile
 all:
-	g++ -shared -o zipkin_opentracing_plugin.so dummy.c \
+	g++ -shared -o libzipkin_opentracing_plugin.so dummy.c \
 			-L${BUILD_DIR}/lib
 			-lzipkin_opentracing
 EOF
 make
-cp zipkin_opentracing_plugin.so /
+cp libzipkin_opentracing_plugin.so /

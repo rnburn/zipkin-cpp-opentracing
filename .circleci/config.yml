@@ -29,8 +29,8 @@ jobs:
       - checkout
       - run: ./ci/do_ci.sh cmake.plugin
       - store_artifacts:
-          path: /zipkin_opentracing_plugin.so
-          destination: zipkin_opentracing_plugin.so
+          path: /libzipkin_opentracing_plugin.so
+          destination: libzipkin_opentracing_plugin.so
 
 workflows:
   version: 2
