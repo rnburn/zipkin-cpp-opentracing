@@ -33,3 +33,13 @@ cmake -DCMAKE_BUILD_TYPE=Release \
       -DBUILD_TESTING=OFF \
       "${SRC_DIR}"
 make && make install
+
+# Create a plugin
+cd "${BUILD_DIR}"
+mkdir zipkin-opentracing-plugin && cd zipkin-opentracing-plugin
+cat <<EOF > Makefile
+all:
+  g++ ${BUILD_DIR}/lib/libzipkin_opentracing.a \
+      -shared -o zipkin_opentracing_plugin.so
+EOF
+make
