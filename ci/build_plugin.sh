@@ -43,7 +43,8 @@ all:
 			-L${BUILD_DIR}/lib \
 			-Wl,--whole-archive \
 			${BUILD_DIR}/lib/libzipkin_opentracing.a \
-			-Wl,--no-whole-archive
+			-Wl,--no-whole-archive \
+			${BUILD_DIR}/lib/libzipkin.a 
 EOF
 make
 cp libzipkin_opentracing_plugin.so /
