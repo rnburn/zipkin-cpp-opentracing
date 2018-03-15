@@ -37,16 +37,12 @@ make && make install
 # Create a plugin
 cd "${BUILD_DIR}"
 mkdir zipkin-opentracing-plugin && cd zipkin-opentracing-plugin
-cat <<EOF > dummy.c
-void dummy() {}
-EOF
 cat <<EOF > Makefile
 all:
 	gcc -shared -o libzipkin_opentracing_plugin.so \
-			dummy.c \
 			-L${BUILD_DIR}/lib \
 			-Wl,--whole-archive \
-			-lzipkin_opentracing \
+			${BUILD_DIR}/lib/libzipkin_opentracing.a \
 			-Wl,--no-whole-archive
 EOF
 make
