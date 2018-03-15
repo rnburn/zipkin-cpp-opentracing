@@ -43,7 +43,7 @@ OpenTracingMakeTracerFactory(const char* opentracing_version,
                              const void** error_category,
                              void** tracer_factory);
 void dummysymbol() {
-	OpenTracingMakeTracerFactory(NULL, NULL, NULL);
+	OpenTracingMakeTracerFactory(0, 0, 0);
 }
 EOF
 cat <<EOF > Makefile
