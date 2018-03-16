@@ -54,7 +54,6 @@ all:
 			-Wl,--no-whole-archive \
 			${BUILD_DIR}/lib/libzipkin.a \
 			/usr/lib/x86_64-linux-gnu/libcurl.a \
-      -lpthread \
       -static -static-libstdc++ -static-libgcc
 EOF
 make
