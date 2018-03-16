@@ -3,11 +3,34 @@
 set -e
 apt-get update 
 apt-get install --no-install-recommends --no-install-suggests -y \
-                libcurl4-openssl-dev \
                 build-essential \
                 cmake \
+                wget \
                 git \
                 ca-certificates
+# Install libcurl
+CURL_VERSION=7.59.0
+cd "${BUILD_DIR}"
+wget https://curl.haxx.se/download/curl-${CURL_VERSION}.tar.gz
+tar zxf curl-${CURL_VERSION}
+cd curl-${CURL_VERSION}
+./configure --prefix="${BUILD_DIR}" \
+            --disable-ftp \
+            --disable-ldap \
+            --disable-dict \
+            --disable-telnet \
+            --disable-tftp \
+            --disable-pop3 \
+            --disable-smtp \
+            --disable-gopher \
+            --without-ssl \
+            --disable-crypto-auth \
+            --without-axtls \
+            --disable-rtsp \
+            --enable-shared=no \
+            --enable-static=yes \
+            --with-pic
+make && make install
 
 # Build OpenTracing
 cd "${BUILD_DIR}"
@@ -53,7 +76,7 @@ all:
 			${BUILD_DIR}/lib/libzipkin_opentracing.a \
 			-Wl,--no-whole-archive \
 			${BUILD_DIR}/lib/libzipkin.a \
-			/usr/lib/x86_64-linux-gnu/libcurl.a \
+			${BUILD_DIR}/lib/libcurl.a \
       -static-libstdc++ -static-libgcc
 EOF
 make
