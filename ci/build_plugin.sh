@@ -75,6 +75,7 @@ all:
 			-Wl,--whole-archive \
 			${BUILD_DIR}/lib/libzipkin_opentracing.a \
 			-Wl,--no-whole-archive \
+      ${BUILD_DIR}/lib/libopentracing.a \
 			${BUILD_DIR}/lib/libzipkin.a \
 			${BUILD_DIR}/lib/libcurl.a \
       -static-libstdc++ -static-libgcc
