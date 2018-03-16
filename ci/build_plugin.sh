@@ -12,7 +12,7 @@ apt-get install --no-install-recommends --no-install-suggests -y \
 CURL_VERSION=7.59.0
 cd "${BUILD_DIR}"
 wget https://curl.haxx.se/download/curl-${CURL_VERSION}.tar.gz
-tar zxf curl-${CURL_VERSION}
+tar zxf curl-${CURL_VERSION}.tar.gz
 cd curl-${CURL_VERSION}
 ./configure --prefix="${BUILD_DIR}" \
             --disable-ftp \
