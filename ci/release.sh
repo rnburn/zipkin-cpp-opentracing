@@ -15,7 +15,7 @@ unzip ghr_v0.5.4_linux_amd64.zip
 gzip -c /libzipkin_opentracing_plugin.so > linux-amd64-libzipkin_opentracing_plugin.so.gz
 
 # Create release
-cd "${BUILD_DIR}"
+cd "${SRC_DIR}"
 /ghr -t $GITHUB_TOKEN \
      -u $CIRCLE_PROJECT_USERNAME \
      -r $CIRCLE_PROJECT_REPONAME \
