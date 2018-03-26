@@ -42,7 +42,10 @@ workflows:
   version: 2
   all:
     jobs:
-      - release
+      - release:
+          filters:
+            tags:
+              only: /^v.*/
       - asan
       - tsan
       - bazel
