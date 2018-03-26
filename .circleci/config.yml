@@ -31,11 +31,18 @@ jobs:
       - store_artifacts:
           path: /libzipkin_opentracing_plugin.so
           destination: libzipkin_opentracing_plugin.so
+  release:
+    docker:
+      - image: ubuntu:17.10
+    steps:
+      - checkout
+      - run: ./ci/do_ci.sh release
 
 workflows:
   version: 2
   all:
     jobs:
+      - release
       - asan
       - tsan
       - bazel

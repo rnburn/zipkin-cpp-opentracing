@@ -38,6 +38,10 @@ elif [[ "$1" == "bazel.build" ]]; then
 elif [[ "$1" == "cmake.plugin" ]]; then
   "${SRC_DIR}"/ci//build_plugin.sh
   exit 0
+elif [[ "$1" == "release" ]]; then
+  "${SRC_DIR}"/ci//build_plugin.sh
+  "${SRC_DIR}"/ci/release.sh
+  exit 0
 else
   echo "Invalid do_ci.sh target"
   exit 1
