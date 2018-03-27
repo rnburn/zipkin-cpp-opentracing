@@ -12,13 +12,19 @@ wget https://github.com/tcnksm/ghr/releases/download/v0.5.4/ghr_v0.5.4_linux_amd
 unzip ghr_v0.5.4_linux_amd64.zip
 
 # Create packaged plugins
-gzip -c /libzipkin_opentracing_plugin.so > linux-amd64-libzipkin_opentracing_plugin.so.gz
+gzip -c /libzipkin_opentracing_plugin.so > /linux-amd64-libzipkin_opentracing_plugin.so.gz
 
 # Create release
 cd "${SRC_DIR}"
+echo "/ghr -t $GITHUB_TOKEN \
+     -u $CIRCLE_PROJECT_USERNAME \
+     -r $CIRCLE_PROJECT_REPONAME \
+     -replace \
+     `git describe --abbrev=0 --tags` \
+     /linux-amd64-libzipkin_opentracing_plugin.so.gz"
 /ghr -t $GITHUB_TOKEN \
      -u $CIRCLE_PROJECT_USERNAME \
      -r $CIRCLE_PROJECT_REPONAME \
      -replace \
-     `git describe --tags` \
+     `git describe --abbrev=0 --tags` \
      /linux-amd64-libzipkin_opentracing_plugin.so.gz
