@@ -43,6 +43,10 @@ workflows:
   all:
     jobs:
       - release:
+          # ignore any commit on any branch by default
+          branches:
+            ignore: /.*/
+          # only act on version tags<Paste>
           filters:
             tags:
               only: /^v[0-9]+(\.[0-9]+)*$/
