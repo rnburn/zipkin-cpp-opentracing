@@ -4,6 +4,7 @@ jobs:
     docker:
       - image: ubuntu:17.10
     steps:
+      - run: apt-get -qq update; apt-get -y install git ssh
       - checkout
       - run: ./ci/install_dependencies.sh
       - run: ./ci/do_ci.sh cmake.asan
@@ -11,6 +12,7 @@ jobs:
     docker:
       - image: ubuntu:17.10
     steps:
+      - run: apt-get -qq update; apt-get -y install git ssh
       - checkout
       - run: ./ci/install_dependencies.sh
       - run: ./ci/do_ci.sh cmake.tsan
@@ -18,6 +20,7 @@ jobs:
     docker:
       - image: ubuntu:17.10
     steps:
+      - run: apt-get -qq update; apt-get -y install git ssh
       - checkout
       - run: ./ci/install_dependencies.sh
       - run: ./ci/install_bazel.sh
@@ -26,6 +29,7 @@ jobs:
     docker:
       - image: ubuntu:17.10
     steps:
+      - run: apt-get -qq update; apt-get -y install git ssh
       - checkout
       - run: ./ci/do_ci.sh cmake.plugin
       - store_artifacts:
@@ -35,6 +39,7 @@ jobs:
     docker:
       - image: ubuntu:17.10
     steps:
+      - run: apt-get -qq update; apt-get -y install git ssh
       - checkout
       - run: ./ci/do_ci.sh release
 
