@@ -1,36 +1,54 @@
 version: 2
 jobs:
-  build:
+  asan:
     docker:
-      - image: debian:stretch
+      - image: ubuntu:17.10
     steps:
-      - run:
-          name: Install libcurl
-          command: |
-            apt-get update 
-            apt-get install --no-install-recommends --no-install-suggests -y \
-                            libcurl4-openssl-dev \
-                            build-essential \
-                            cmake \
-                            git \
-                            ca-certificates
-      - run:
-          name: Install OpenTracing
-          command: |
-            cd /
-            git clone https://github.com/opentracing/opentracing-cpp.git
-            cd opentracing-cpp
-            mkdir .build && cd .build
-            cmake -DBUILD_TESTING=OFF ..
-            make && make install
-            cd /
       - checkout
-      - run:
-          name: Run CMake
-          command: mkdir .build && cd .build && cmake ..
-      - run:
-          name: Build
-          command: cd .build && make
-      - run:
-          name: Test
-          command: cd .build && make test
+      - run: ./ci/install_dependencies.sh
+      - run: ./ci/do_ci.sh cmake.asan
+  tsan:
+    docker:
+      - image: ubuntu:17.10
+    steps:
+      - checkout
+      - run: ./ci/install_dependencies.sh
+      - run: ./ci/do_ci.sh cmake.tsan
+  bazel:
+    docker:
+      - image: ubuntu:17.10
+    steps:
+      - checkout
+      - run: ./ci/install_dependencies.sh
+      - run: ./ci/install_bazel.sh
+      - run: ./ci/do_ci.sh bazel.build
+  plugin:
+    docker:
+      - image: ubuntu:17.10
+    steps:
+      - checkout
+      - run: ./ci/do_ci.sh cmake.plugin
+      - store_artifacts:
+          path: /libzipkin_opentracing_plugin.so
+          destination: libzipkin_opentracing_plugin.so
+  release:
+    docker:
+      - image: ubuntu:17.10
+    steps:
+      - checkout
+      - run: ./ci/do_ci.sh release
+
+workflows:
+  version: 2
+  build_test_and_deploy:
+    jobs:
+      - release:
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /^v[0-9]+(\.[0-9]+)*$/
+      - asan
+      - tsan
+      - bazel
+      - plugin
