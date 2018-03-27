@@ -16,7 +16,7 @@ gzip -c /libzipkin_opentracing_plugin.so > /linux-amd64-libzipkin_opentracing_pl
 
 # Create release
 cd "${SRC_DIR}"
-echo "/ghr -t $GITHUB_TOKEN \
+echo "/ghr -t <hidden> \
      -u $CIRCLE_PROJECT_USERNAME \
      -r $CIRCLE_PROJECT_REPONAME \
      -replace \
