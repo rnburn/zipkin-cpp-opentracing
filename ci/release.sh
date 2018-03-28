@@ -16,15 +16,17 @@ gzip -c /libzipkin_opentracing_plugin.so > /linux-amd64-libzipkin_opentracing_pl
 
 # Create release
 cd "${SRC_DIR}"
+VERSION_TAG="`git describe --abbrev=0 --tags`"
+RELEASE_TITLE="${VERSION_TAG/v/Release }"
 echo "/ghr -t <hidden> \
      -u $CIRCLE_PROJECT_USERNAME \
      -r $CIRCLE_PROJECT_REPONAME \
      -replace \
-     `git describe --abbrev=0 --tags` \
+     "${RELEASE_TITLE}" \
      /linux-amd64-libzipkin_opentracing_plugin.so.gz"
 /ghr -t $GITHUB_TOKEN \
      -u $CIRCLE_PROJECT_USERNAME \
      -r $CIRCLE_PROJECT_REPONAME \
      -replace \
-     `git describe --abbrev=0 --tags` \
+     "${RELEASE_TITLE}" \
      /linux-amd64-libzipkin_opentracing_plugin.so.gz
