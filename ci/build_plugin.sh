@@ -8,6 +8,11 @@ apt-get install --no-install-recommends --no-install-suggests -y \
                 wget \
                 git \
                 ca-certificates
+
+# Compile for a portable cpu architecture
+export CFLAGS="-march=x86-64"
+export CXXFLAGS="-march=x86-64"
+
 # Install libcurl
 CURL_VERSION=7.59.0
 cd "${BUILD_DIR}"
