@@ -1,4 +1,8 @@
+#ifdef _MSC_VER
+#include <Ws2tcpip.h>
+#else
 #include <arpa/inet.h>
+#endif
 #include <cstring>
 #include <string>
 #include <zipkin/ip_address.h>
