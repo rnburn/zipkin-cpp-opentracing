@@ -28,7 +28,7 @@ ZipkinHttpTransporter::ZipkinHttpTransporter(const char *collector_host,
     throw CurlError{rcode};
   }
 
-  curl_easy_setopt(handle_, CURLOPT_ERRORBUFFER, error_buffer_);
+  rcode = curl_easy_setopt(handle_, CURLOPT_ERRORBUFFER, error_buffer_);
   if (rcode != CURLE_OK) {
     throw CurlError{rcode};
   }
