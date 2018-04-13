@@ -78,48 +78,59 @@ static std::string toJson(const Value &value) {
 }
 
 namespace {
-struct ValueVisitor {
-  BinaryAnnotation &annotation;
+
+struct ToStringValueVisitor {
   const Value &original_value;
 
-  void operator()(bool value) const {
-    annotation.setValue(std::to_string(value));
+  std::string operator()(bool value) const {
+    return std::to_string(value);
   }
 
-  void operator()(double value) const {
-    annotation.setValue(std::to_string(value));
+  std::string operator()(double value) const {
+    return std::to_string(value);
   }
 
-  void operator()(int64_t value) const {
-    annotation.setValue(std::to_string(value));
+  std::string operator()(int64_t value) const {
+    return std::to_string(value);
   }
 
-  void operator()(uint64_t value) const {
+  std::string operator()(uint64_t value) const {
     // There's no uint64_t value type so cast to an int64_t.
-    annotation.setValue(std::to_string(value));
+    return std::to_string(value);
   }
 
-  void operator()(const std::string &s) const { annotation.setValue(s); }
+  std::string operator()(const std::string &s) const { return s; }
 
-  void operator()(std::nullptr_t) const { annotation.setValue("0"); }
+  std::string operator()(std::nullptr_t) const { return "0"; }
 
-  void operator()(const char *s) const { annotation.setValue(std::string{s}); }
+  std::string operator()(const char *s) const { return s; }
 
-  void operator()(const Values & /*unused*/) const {
-    annotation.setValue(toJson(original_value));
+  std::string operator()(const Values & /*unused*/) const {
+    return toJson(original_value);
   }
 
-  void operator()(const Dictionary & /*unused*/) const {
-    annotation.setValue(toJson(original_value));
+  std::string operator()(const Dictionary & /*unused*/) const {
+    return toJson(original_value);
   }
 };
+
 } // anonymous namespace
 
 BinaryAnnotation toBinaryAnnotation(string_view key, const Value &value) {
+  ToStringValueVisitor value_visitor{value};
+  const std::string str = apply_visitor(value_visitor, value);
   BinaryAnnotation annotation;
   annotation.setKey(key);
-  ValueVisitor value_visitor{annotation, value};
-  apply_visitor(value_visitor, value);
+  annotation.setValue(str);
   return annotation;
 }
+
+Annotation toAnnotation(string_view key, const Value &value) {
+  ToStringValueVisitor value_visitor{value};
+  const std::string str = apply_visitor(value_visitor, value);
+  Annotation annotation;
+  annotation.setValue(std::string(key) + "=" + str);
+  return annotation;
+}
+
 } // namespace zipkin
