@@ -125,11 +125,17 @@ BinaryAnnotation toBinaryAnnotation(string_view key, const Value &value) {
   return annotation;
 }
 
-Annotation toAnnotation(string_view key, const Value &value) {
-  ToStringValueVisitor value_visitor{value};
-  const std::string str = apply_visitor(value_visitor, value);
+Annotation toAnnotation(const std::vector<std::pair<string_view, Value>>& fields) {
+  rapidjson::StringBuffer buffer;
+  JsonWriter writer(buffer);
+  writer.StartObject();
+  for (auto & field : fields) {
+    writer.Key(field.first.data());
+    toJson(writer, field.second);
+  }
+  writer.EndObject();
   Annotation annotation;
-  annotation.setValue(std::string(key) + "=" + str);
+  annotation.setValue(buffer.GetString());
   return annotation;
 }
 

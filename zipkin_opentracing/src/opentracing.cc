@@ -119,6 +119,17 @@ static const OtSpanContext *findSpanContext(
   return nullptr;
 }
 
+static void appendAnnotations(Span& span, const std::vector<ot::LogRecord>& log_records, Endpoint endpoint) {
+  for (const auto &lr : log_records) {
+    const auto timestamp = std::chrono::duration_cast<std::chrono::microseconds>(
+                                    lr.timestamp.time_since_epoch()).count();
+    Annotation annotation = toAnnotation({ lr.fields.begin(), lr.fields.end() });
+    annotation.setTimestamp(timestamp);
+    annotation.setEndpoint(endpoint);
+    span.addAnnotation(annotation);
+  }
+}
+
 class OtSpan : public ot::Span {
 public:
   OtSpan(std::shared_ptr<const ot::Tracer> &&tracer_owner, SpanPtr &&span_owner,
@@ -221,19 +232,8 @@ public:
 
     std::vector<ot::LogRecord> log_records;
     log_records.swap(log_records_);
-    log_records.reserve(options.log_records.size());
-    std::copy(options.log_records.begin(), options.log_records.end(),
-            std::back_inserter(log_records));
-
-    for (const auto &lr : log_records) {
-        const auto timestamp = std::chrono::duration_cast<std::chrono::microseconds>(
-                lr.timestamp.time_since_epoch()).count();
-        for (const auto& field : lr.fields) {
-            Annotation annotation = toAnnotation(field.first, field.second);
-            annotation.setTimestamp(timestamp);
-            span_->addAnnotation(annotation);
-        }
-    }
+    appendAnnotations(*span_, log_records, endpoint_);
+    appendAnnotations(*span_, options.log_records, endpoint_);
 
     span_->finish();
   } catch (const std::bad_alloc &) {
