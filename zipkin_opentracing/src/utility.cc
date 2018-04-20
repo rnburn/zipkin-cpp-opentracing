@@ -79,49 +79,60 @@ static std::string toJson(const Value &value) {
 
 namespace {
 
-struct ToStringValueVisitor {
+struct SetValueVisitor {
+  BinaryAnnotation& annotation;
   const Value &original_value;
 
-  std::string operator()(bool value) const {
-    return std::to_string(value);
+  // natively handled types
+
+  void operator()(bool value) const {
+    annotation.setValue(value);
   }
 
-  std::string operator()(double value) const {
-    return std::to_string(value);
+  void operator()(double value) const {
+    annotation.setValue(value);
   }
 
-  std::string operator()(int64_t value) const {
-    return std::to_string(value);
+  void operator()(int64_t value) const {
+    annotation.setValue(value);
   }
 
-  std::string operator()(uint64_t value) const {
+  void operator()(const std::string &s) const {
+    annotation.setValue(s);
+  }
+
+  // overrides
+
+  void operator()(uint64_t value) const {
     // There's no uint64_t value type so cast to an int64_t.
-    return std::to_string(value);
+    int64_t cast = value;
+    (*this)(cast);
   }
 
-  std::string operator()(const std::string &s) const { return s; }
-
-  std::string operator()(std::nullptr_t) const { return "0"; }
-
-  std::string operator()(const char *s) const { return s; }
-
-  std::string operator()(const Values & /*unused*/) const {
-    return toJson(original_value);
+  void operator()(std::nullptr_t) const {
+     (*this)("0");
   }
 
-  std::string operator()(const Dictionary & /*unused*/) const {
-    return toJson(original_value);
+  void operator()(const char *s) const {
+     (*this)(std::string(s));
+  }
+
+  void operator()(const Values & /*unused*/) const {
+    (*this)(toJson(original_value));
+  }
+
+  void operator()(const Dictionary & /*unused*/) const {
+    (*this)(toJson(original_value));
   }
 };
 
 } // anonymous namespace
 
 BinaryAnnotation toBinaryAnnotation(string_view key, const Value &value) {
-  ToStringValueVisitor value_visitor{value};
-  const std::string str = apply_visitor(value_visitor, value);
   BinaryAnnotation annotation;
   annotation.setKey(key);
-  annotation.setValue(str);
+  SetValueVisitor visitor{annotation, value};
+  apply_visitor(visitor, value);
   return annotation;
 }
 
