@@ -10,9 +10,10 @@ set(ZIPKIN_VERSION_STRING
 
 option(BUILD_SHARED_LIBS "Build as a shared library" ON)
 option(BUILD_STATIC_LIBS "Build as a static library" ON)
+option(BUILD_PLUGIN "Build a plugin library" OFF)
 
-if (NOT BUILD_SHARED_LIBS AND NOT BUILD_STATIC_LIBS)
-    message(FATAL_ERROR "One or both of BUILD_SHARED_LIBS or BUILD_STATIC_LIBS must be set to ON to build")
+if (NOT BUILD_SHARED_LIBS AND NOT BUILD_STATIC_LIBS AND NOT BUILD_PLUGIN)
+  message(FATAL_ERROR "One or all of BUILD_SHARED_LIBS, BUILD_STATIC_LIBS, or BUILD_PLUGIN must be set to ON to build")
 endif()
 
 set(CMAKE_CXX_STANDARD 11)

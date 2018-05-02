@@ -39,7 +39,7 @@ make && make install
 
 # Build OpenTracing
 cd "${BUILD_DIR}"
-git clone https://github.com/opentracing/opentracing-cpp.git
+git clone -b v1.3 https://github.com/opentracing/opentracing-cpp.git
 cd opentracing-cpp
 mkdir .build && cd .build
 cmake -DCMAKE_BUILD_TYPE=Release \
@@ -55,35 +55,11 @@ make && make install
 cd "${BUILD_DIR}"
 mkdir zipkin-cpp-opentracing && cd zipkin-cpp-opentracing
 cmake -DCMAKE_BUILD_TYPE=Release \
-      -DCMAKE_CXX_FLAGS="-fPIC" \
       -DCMAKE_INSTALL_PREFIX="${BUILD_DIR}" \
       -DBUILD_SHARED_LIBS=OFF \
+      -DBUILD_STATIC=OFF \
       -DBUILD_TESTING=OFF \
+      -DBUILD_PLUGIN=ON \
       "${SRC_DIR}"
 make && make install
-
-# Create a plugin
-cd "${BUILD_DIR}"
-mkdir zipkin-opentracing-plugin && cd zipkin-opentracing-plugin
-cat <<EOF > export.map
-{
-  global:
-    OpenTracingMakeTracerFactory;
-  local: *;
-};
-EOF
-cat <<EOF > Makefile
-all:
-	gcc -shared -o libzipkin_opentracing_plugin.so \
-      -Wl,--version-script=export.map \
-			-L${BUILD_DIR}/lib \
-			-Wl,--whole-archive \
-			${BUILD_DIR}/lib/libzipkin_opentracing.a \
-			-Wl,--no-whole-archive \
-      ${BUILD_DIR}/lib/libopentracing.a \
-			${BUILD_DIR}/lib/libzipkin.a \
-			${BUILD_DIR}/lib/libcurl.a \
-      -static-libstdc++ -static-libgcc
-EOF
-make
-cp libzipkin_opentracing_plugin.so /
+cp /usr/local/lib/libzipkin_opentracing_plugin.so /

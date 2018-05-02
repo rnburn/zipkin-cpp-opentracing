@@ -27,6 +27,19 @@ if (BUILD_STATIC_LIBS)
           ARCHIVE DESTINATION lib)
 endif()
 
+if (BUILD_PLUGIN)
+  file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/export.map
+    "{ global: OpenTracingMakeTracerFactory; local: *; };")
+  add_library(zipkin_opentracing_plugin MODULE ${ZIPKIN_OPENTRACING_SRCS})
+  target_link_libraries(zipkin_opentracing_plugin ${OPENTRACING_LIB}
+    zipkin-plugin-static
+    -static-libgcc
+    -static-libstdc++
+    -Wl,--version-script=${CMAKE_CURRENT_BINARY_DIR}/export.map)
+  install(TARGETS zipkin_opentracing_plugin
+          LIBRARY DESTINATION lib)
+endif()
+
 
 if(BUILD_SHARED_LIBS AND BUILD_TESTING)
   add_subdirectory(example)

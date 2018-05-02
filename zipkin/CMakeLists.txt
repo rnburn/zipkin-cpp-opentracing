@@ -31,6 +31,12 @@ if (BUILD_STATIC_LIBS)
           ARCHIVE DESTINATION lib)
 endif()
 
+if (BUILD_PLUGIN)
+  add_library(zipkin-plugin-static STATIC ${ZIPKIN_SRCS})
+  target_link_libraries(zipkin-plugin-static Threads::Threads ${CURL_LIBRARIES} ${WIN32_LIBRARIES})
+  set_property(TARGET zipkin-plugin-static PROPERTY POSITION_INDEPENDENT_CODE ON)
+endif()
+
 
 if(BUILD_TESTING AND BUILD_SHARED_LIBS)
   add_subdirectory(test)
