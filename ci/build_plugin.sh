@@ -62,4 +62,4 @@ cmake -DCMAKE_BUILD_TYPE=Release \
       -DBUILD_PLUGIN=ON \
       "${SRC_DIR}"
 make && make install
-cp /usr/local/lib/libzipkin_opentracing_plugin.so /
+cp "${BUILD_DIR}"/lib/libzipkin_opentracing_plugin.so /
