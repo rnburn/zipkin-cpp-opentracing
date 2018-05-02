@@ -39,7 +39,7 @@ make && make install
 
 # Build OpenTracing
 cd "${BUILD_DIR}"
-git clone -b v1.3 https://github.com/opentracing/opentracing-cpp.git
+git clone -b v1.3.0 https://github.com/opentracing/opentracing-cpp.git
 cd opentracing-cpp
 mkdir .build && cd .build
 cmake -DCMAKE_BUILD_TYPE=Release \
