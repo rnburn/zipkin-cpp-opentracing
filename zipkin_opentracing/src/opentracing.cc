@@ -1,4 +1,5 @@
 #include <zipkin/opentracing.h>
+#include <opentracing/util.h>
 
 #include "propagation.h"
 #include "utility.h"
@@ -6,6 +7,7 @@
 #include <cstring>
 #include <mutex>
 #include <unordered_map>
+#include <random>
 #include <zipkin/tracer.h>
 #include <zipkin/utility.h>
 #include <zipkin/zipkin_core_types.h>
@@ -156,7 +158,7 @@ public:
           parent_span_context->baggage_mutex_};
       auto baggage = parent_span_context->baggage_;
       span_context_ =
-          OtSpanContext{zipkin::SpanContext{*span_}, std::move(baggage)};
+          OtSpanContext{zipkin::SpanContext{*span_}, std::move(baggage)}; 
     } else {
       span_context_ = OtSpanContext{zipkin::SpanContext{*span_}};
     }
@@ -277,10 +279,27 @@ public:
   StartSpanWithOptions(string_view operation_name,
                        const ot::StartSpanOptions &options) const
       noexcept override {
+    
     // Create the core zipkin span.
     SpanPtr span{new zipkin::Span{}};
     span->setName(operation_name);
     span->setTracer(tracer_.get());
+
+    // TODO
+    // * sampling rate should be arg-based
+    // * sampling should probably be extracted into a sampler to allow
+    //   different strategies
+    // * we should be guarding this to set sampling only when its a
+    //   root span
+    auto value = RandomUtil::generateId();
+    auto max = std::numeric_limits<uint64_t>::max();
+    long double sampling_rate = 0.5;
+    auto boundary = sampling_rate * max; // be false 50% of the time
+    auto samplingBoundary = static_cast<uint64_t>(boundary);
+
+    if (value > samplingBoundary) {
+      span->setSampled(true);
+    }
 
     Endpoint endpoint{tracer_->serviceName(), tracer_->address()};
 
@@ -329,7 +348,7 @@ public:
 
 private:
   TracerPtr tracer_;
-
+  
   template <class Carrier>
   expected<void> InjectImpl(const ot::SpanContext &sc, Carrier &writer) const
       try {
