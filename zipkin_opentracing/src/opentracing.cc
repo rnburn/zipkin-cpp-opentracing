@@ -153,6 +153,11 @@ public:
       tags_[tag.first] = tag.second;
     }
 
+    // Sampling
+    if (parent_span_context) {
+      span_->setSampled(parent_span_context->span_context_.isSampled());
+    }
+
     // Set context.
     if (parent_span_context) {
       std::lock_guard<std::mutex> lock_guard{
@@ -286,11 +291,14 @@ public:
     span->setName(operation_name);
     span->setTracer(tracer_.get());
 
-    if (!hasParent(options)) {
-      ProbabilisticSampler s(0.5);
-      if (s.ShouldSample()) {
-        span->setSampled(true);
-      }
+    auto pctx = parent(options);
+    if (pctx) {
+      span->setSampled(pctx->isSampled());
+    } else {
+      // ProbabilisticSampler s(0.5);
+      // if (s.ShouldSample()) {
+        span->setSampled(false);
+      // }
     }
 
     Endpoint endpoint{tracer_->serviceName(), tracer_->address()};
@@ -341,18 +349,24 @@ public:
 private:
   TracerPtr tracer_;
   
-  bool
-  hasParent(const ot::StartSpanOptions &options) const {
+  const zipkin::SpanContext*
+  parent(const ot::StartSpanOptions &options) const {
     for (auto ref : options.references) {
       if (!ref.second) {
         continue;
       }
-      
+
+      const auto* ctx = dynamic_cast<const SpanContext*>(ref.second);
+      if (!ctx) {
+        continue;
+      }
+
       if (ref.first == ot::SpanReferenceType::ChildOfRef) {
-        return true;
+        return ctx;
       }
     }
-    return false;
+
+    return nullptr;
   }
 
   template <class Carrier>
