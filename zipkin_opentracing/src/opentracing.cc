@@ -295,10 +295,12 @@ public:
     if (pctx) {
       span->setSampled(pctx->isSampled());
     } else {
-      // ProbabilisticSampler s(0.5);
-      // if (s.ShouldSample()) {
-        span->setSampled(false);
-      // }
+      // TODO
+      // * pass sample rate from configuration
+      ProbabilisticSampler s(0.5);
+      if (s.ShouldSample()) {
+        span->setSampled(true);
+      }
     }
 
     Endpoint endpoint{tracer_->serviceName(), tracer_->address()};
