@@ -341,8 +341,13 @@ public:
 private:
   TracerPtr tracer_;
   
-  bool hasParent(const ot::StartSpanOptions &options) const {
+  bool
+  hasParent(const ot::StartSpanOptions &options) const {
     for (auto ref : options.references) {
+      if (!ref.second) {
+        continue;
+      }
+      
       if (ref.first == ot::SpanReferenceType::ChildOfRef) {
         return true;
       }
