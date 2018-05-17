@@ -8,7 +8,8 @@ set(ZIPKIN_OPENTRACING_SRCS src/utility.cc
                             src/propagation.cc
                             src/dynamic_load.cc
                             src/tracer_factory.cc
-                            src/opentracing.cc)
+                            src/opentracing.cc
+                            src/sampling.cc)
 
 if (BUILD_SHARED_LIBS)               
   add_library(zipkin_opentracing SHARED ${ZIPKIN_OPENTRACING_SRCS})

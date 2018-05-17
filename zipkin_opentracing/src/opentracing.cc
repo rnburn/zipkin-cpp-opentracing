@@ -1,6 +1,7 @@
 #include <zipkin/opentracing.h>
 #include <opentracing/util.h>
 
+#include "sampling.h"
 #include "propagation.h"
 #include "utility.h"
 #include <atomic>
@@ -291,13 +292,8 @@ public:
     //   different strategies
     // * we should be guarding this to set sampling only when its a
     //   root span
-    auto value = RandomUtil::generateId();
-    auto max = std::numeric_limits<uint64_t>::max();
-    long double sampling_rate = 0.5;
-    auto boundary = sampling_rate * max; // be false 50% of the time
-    auto samplingBoundary = static_cast<uint64_t>(boundary);
-
-    if (value > samplingBoundary) {
+    ProbabilisticSampler s(0.5);
+    if (s.ShouldSample()) {
       span->setSampled(true);
     }
 
