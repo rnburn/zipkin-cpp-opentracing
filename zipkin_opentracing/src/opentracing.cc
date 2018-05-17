@@ -298,9 +298,7 @@ public:
       // TODO
       // * pass sample rate from configuration
       ProbabilisticSampler s(0.5);
-      if (s.ShouldSample()) {
-        span->setSampled(true);
-      }
+      span->setSampled(s.ShouldSample());
     }
 
     Endpoint endpoint{tracer_->serviceName(), tracer_->address()};
