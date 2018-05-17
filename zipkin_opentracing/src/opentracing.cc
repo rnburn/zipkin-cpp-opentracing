@@ -286,15 +286,11 @@ public:
     span->setName(operation_name);
     span->setTracer(tracer_.get());
 
-    // TODO
-    // * sampling rate should be arg-based
-    // * sampling should probably be extracted into a sampler to allow
-    //   different strategies
-    // * we should be guarding this to set sampling only when its a
-    //   root span
-    ProbabilisticSampler s(0.5);
-    if (s.ShouldSample()) {
-      span->setSampled(true);
+    if (!hasParent(options)) {
+      ProbabilisticSampler s(0.5);
+      if (s.ShouldSample()) {
+        span->setSampled(true);
+      }
     }
 
     Endpoint endpoint{tracer_->serviceName(), tracer_->address()};
@@ -345,6 +341,15 @@ public:
 private:
   TracerPtr tracer_;
   
+  bool hasParent(const ot::StartSpanOptions &options) const {
+    for (auto ref : options.references) {
+      if (ref.first == ot::SpanReferenceType::ChildOfRef) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   template <class Carrier>
   expected<void> InjectImpl(const ot::SpanContext &sc, Carrier &writer) const
       try {
