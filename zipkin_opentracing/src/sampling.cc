@@ -1,4 +1,5 @@
 #include "sampling.h"
+#include <random>
 
 namespace zipkin {
   bool

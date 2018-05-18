@@ -1,6 +1,5 @@
 #pragma once
 #include <memory>
-#include <random>
 
 namespace zipkin {
   class Sampler {
