@@ -20,4 +20,5 @@ makeZipkinOtTracer(const ZipkinOtTracerOptions &options);
 std::shared_ptr<opentracing::Tracer>
 makeZipkinOtTracer(const ZipkinOtTracerOptions &options,
                    std::unique_ptr<Reporter> &&reporter);
+
 } // namespace zipkin

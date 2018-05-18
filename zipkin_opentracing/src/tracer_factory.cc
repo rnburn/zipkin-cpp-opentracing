@@ -41,7 +41,7 @@ const char *const configuration_schema = R"(
     "sample_rate": {
       "type": "float",
       "minimum": 0.0,
-      "maxiumum": 1.0,
+      "maxiumum": 1.0
     }
   }
 }
@@ -97,7 +97,7 @@ OtTracerFactory::MakeTracer(const char *configuration,
     options.max_buffered_spans = document["max_buffered_spans"].GetInt();
   }
   if (document.HasMember("sample_rate")) {
-    options.sample_rate = document["sample_rate"].GetFloat();
+    options.sample_rate = document["sample_rate"].GetDouble();
   }
   return makeZipkinOtTracer(options);
 } catch (const std::bad_alloc &) {

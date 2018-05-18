@@ -102,6 +102,10 @@ public:
     return injectSpanContext(writer, span_context_, baggage_);
   }
 
+  bool isSampled() const {
+    return span_context_.isSampled();
+  }
+
 private:
   zipkin::SpanContext span_context_;
   mutable std::mutex baggage_mutex_;
@@ -151,11 +155,6 @@ public:
     // Set tags.
     for (auto &tag : options.tags) {
       tags_[tag.first] = tag.second;
-    }
-
-    // Sampling
-    if (parent_span_context) {
-      span_->setSampled(parent_span_context->span_context_.isSampled());
     }
 
     // Set context.
@@ -279,7 +278,7 @@ private:
 class OtTracer : public ot::Tracer,
                  public std::enable_shared_from_this<OtTracer> {
 public:
-  explicit OtTracer(TracerPtr &&tracer) : tracer_{std::move(tracer)} {}
+  explicit OtTracer(TracerPtr &&tracer, SamplerPtr &&sampler) : tracer_{std::move(tracer)}, sampler_{std::move(sampler)} {}
 
   std::unique_ptr<ot::Span>
   StartSpanWithOptions(string_view operation_name,
@@ -291,16 +290,14 @@ public:
     span->setName(operation_name);
     span->setTracer(tracer_.get());
 
-    auto pctx = parent(options);
-    if (pctx) {
-      span->setSampled(pctx->isSampled());
-    } else {
-      // TODO
-      // * pass sample rate from configuration
-      ProbabilisticSampler s(0.5);
-      span->setSampled(s.ShouldSample());
-    }
+    auto parent = findSpanContext(options.references);
 
+    if (!parent) {
+      span->setSampled(sampler_->ShouldSample());
+    } else {
+      span->setSampled(parent->isSampled());
+    }
+    
     Endpoint endpoint{tracer_->serviceName(), tracer_->address()};
 
     // Add a binary annotation for the serviceName.
@@ -348,26 +345,7 @@ public:
 
 private:
   TracerPtr tracer_;
-  
-  const zipkin::SpanContext*
-  parent(const ot::StartSpanOptions &options) const {
-    for (auto ref : options.references) {
-      if (!ref.second) {
-        continue;
-      }
-
-      const auto* ctx = dynamic_cast<const SpanContext*>(ref.second);
-      if (!ctx) {
-        continue;
-      }
-
-      if (ref.first == ot::SpanReferenceType::ChildOfRef) {
-        return ctx;
-      }
-    }
-
-    return nullptr;
-  }
+  SamplerPtr sampler_;
 
   template <class Carrier>
   expected<void> InjectImpl(const ot::SpanContext &sc, Carrier &writer) const
@@ -407,7 +385,8 @@ makeZipkinOtTracer(const ZipkinOtTracerOptions &options,
                    std::unique_ptr<Reporter> &&reporter) {
   TracerPtr tracer{new Tracer{options.service_name, options.service_address}};
   tracer->setReporter(std::move(reporter));
-  return std::shared_ptr<ot::Tracer>{new OtTracer{std::move(tracer)}};
+  SamplerPtr sampler{new ProbabilisticSampler{options.sample_rate}};
+  return std::shared_ptr<ot::Tracer>{new OtTracer{std::move(tracer), std::move(sampler)}};
 }
 
 std::shared_ptr<ot::Tracer>

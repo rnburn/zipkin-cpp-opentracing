@@ -1,4 +1,5 @@
 #pragma once
+#include <memory>
 
 namespace zipkin {
   class Sampler {
@@ -15,4 +16,6 @@ namespace zipkin {
     private:
       double sample_rate_;
   };
+
+  typedef std::unique_ptr<Sampler> SamplerPtr;
 } // namespace zipkin

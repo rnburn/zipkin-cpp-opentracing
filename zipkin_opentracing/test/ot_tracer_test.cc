@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <opentracing/noop.h>
 #include <zipkin/opentracing.h>
+#include "../src/sampling.h"
 
 #define CATCH_CONFIG_MAIN
 #include <zipkin/catch/catch.hpp>
@@ -53,6 +54,43 @@ TEST_CASE("ot_tracer") {
     CHECK(span.name() == "a");
     CHECK(hasTag(span, "abc", 123));
     CHECK(hasTag(span, "xyz", true));
+  }
+
+  SECTION("Uses sampling rate to determine whether to sample a span.") {
+    auto r = new InMemoryReporter();
+
+    ZipkinOtTracerOptions options;
+    options.sample_rate = 0.0;
+    auto t = makeZipkinOtTracer(options, std::unique_ptr<Reporter>(r));
+
+    auto span_a = t->StartSpan("a");
+    CHECK(span_a);
+    span_a->Finish();
+
+    auto spans = r->spans();
+    CHECK(spans.at(0).isSampled() == false);
+  }
+
+  SECTION("Propagates sampling decision to child span") {
+    ZipkinOtTracerOptions no_sampling;
+    no_sampling.sample_rate = 0.0;
+    auto r1 = new InMemoryReporter();
+    auto no_sampling_tracer = makeZipkinOtTracer(no_sampling, std::unique_ptr<Reporter>(r1));
+
+    ZipkinOtTracerOptions always_sample;
+    always_sample.sample_rate = 1.0;
+    auto r2 = new InMemoryReporter();
+    auto sampling_tracer = makeZipkinOtTracer(always_sample, std::unique_ptr<Reporter>(r2));
+
+    auto span_a = no_sampling_tracer->StartSpan("a");
+    CHECK(span_a);
+    span_a->Finish();
+    auto span_b = sampling_tracer->StartSpan("b", {ChildOf(&span_a->context())});
+    CHECK(span_b);
+    span_b->Finish();
+
+    CHECK(r1->spans().at(0).isSampled() == false);
+    CHECK(r2->spans().at(0).isSampled() == false);
   }
 
   SECTION("You can set a single child-of reference when starting a span.") {
