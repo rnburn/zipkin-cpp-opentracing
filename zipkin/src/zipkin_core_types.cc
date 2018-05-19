@@ -185,7 +185,9 @@ const std::string Span::toJson() {
 
 void Span::finish() {
   if (auto t = tracer()) {
-    t->reportSpan(std::move(*this));
+    if (this->isSampled()) {
+      t->reportSpan(std::move(*this));
+    }
   }
 }
 

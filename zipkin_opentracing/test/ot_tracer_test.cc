@@ -67,8 +67,7 @@ TEST_CASE("ot_tracer") {
     CHECK(span_a);
     span_a->Finish();
 
-    auto spans = r->spans();
-    CHECK(spans.at(0).isSampled() == false);
+    CHECK(r->spans().empty());
   }
 
   SECTION("Propagates sampling decision to child span") {
@@ -89,8 +88,8 @@ TEST_CASE("ot_tracer") {
     CHECK(span_b);
     span_b->Finish();
 
-    CHECK(r1->spans().at(0).isSampled() == false);
-    CHECK(r2->spans().at(0).isSampled() == false);
+    CHECK(r1->spans().empty());
+    CHECK(r2->spans().empty());
   }
 
   SECTION("You can set a single child-of reference when starting a span.") {
