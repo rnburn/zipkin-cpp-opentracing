@@ -282,7 +282,7 @@ private:
 class OtTracer : public ot::Tracer,
                  public std::enable_shared_from_this<OtTracer> {
 public:
-  explicit OtTracer(TracerPtr &&tracer) : tracer_{std::move(tracer)}, sampler_{std::move(new ProbabilisticSampler(1.0))} {}
+  explicit OtTracer(TracerPtr &&tracer) : tracer_{std::move(tracer)}, sampler_{new ProbabilisticSampler(1.0)} {}
   explicit OtTracer(TracerPtr &&tracer, SamplerPtr &&sampler) : tracer_{std::move(tracer)}, sampler_{std::move(sampler)} {}
 
   std::unique_ptr<ot::Span>
