@@ -105,7 +105,7 @@ extractSpanContext(const opentracing::TextMapReader &carrier,
   TraceId trace_id;
   Optional<TraceId> parent_id;
   uint64_t span_id;
-  flags_t flags = 0;  
+  flags_t flags = 0;
   auto result = carrier.ForeachKey(
       [&](ot::string_view key, ot::string_view value) -> ot::expected<void> {
         if (keyCompare(key, zipkin_trace_id)) {

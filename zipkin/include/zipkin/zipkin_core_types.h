@@ -331,7 +331,7 @@ public:
   Span()
       : trace_id_(0), name_(), id_(0), debug_(false), monotonic_start_time_(0),
         tracer_(nullptr) {}
-  
+
   void setSampled(const bool val) { sampled_ = val; }
   bool isSampled() const { return sampled_; }
 

@@ -1,22 +1,22 @@
-#include <zipkin/opentracing.h>
 #include <opentracing/util.h>
+#include <zipkin/opentracing.h>
 
-#include "sampling.h"
 #include "propagation.h"
+#include "sampling.h"
 #include "utility.h"
 #include <atomic>
 #include <cstring>
 #include <mutex>
-#include <unordered_map>
 #include <random>
+#include <unordered_map>
 #include <zipkin/tracer.h>
 #include <zipkin/utility.h>
 #include <zipkin/zipkin_core_types.h>
 
-using opentracing::Value;
 using opentracing::expected;
 using opentracing::make_unexpected;
 using opentracing::string_view;
+using opentracing::Value;
 
 namespace ot = opentracing;
 
@@ -102,9 +102,7 @@ public:
     return injectSpanContext(writer, span_context_, baggage_);
   }
 
-  bool isSampled() const {
-    return span_context_.isSampled();
-  }
+  bool isSampled() const { return span_context_.isSampled(); }
 
   bool isValid() const {
     return span_context_.id() != 0 && !span_context_.trace_id().empty();
@@ -167,7 +165,7 @@ public:
           parent_span_context->baggage_mutex_};
       auto baggage = parent_span_context->baggage_;
       span_context_ =
-          OtSpanContext{zipkin::SpanContext{*span_}, std::move(baggage)}; 
+          OtSpanContext{zipkin::SpanContext{*span_}, std::move(baggage)};
     } else {
       span_context_ = OtSpanContext{zipkin::SpanContext{*span_}};
     }
@@ -282,14 +280,16 @@ private:
 class OtTracer : public ot::Tracer,
                  public std::enable_shared_from_this<OtTracer> {
 public:
-  explicit OtTracer(TracerPtr &&tracer) : tracer_{std::move(tracer)}, sampler_{new ProbabilisticSampler(1.0)} {}
-  explicit OtTracer(TracerPtr &&tracer, SamplerPtr &&sampler) : tracer_{std::move(tracer)}, sampler_{std::move(sampler)} {}
+  explicit OtTracer(TracerPtr &&tracer)
+      : tracer_{std::move(tracer)}, sampler_{new ProbabilisticSampler(1.0)} {}
+  explicit OtTracer(TracerPtr &&tracer, SamplerPtr &&sampler)
+      : tracer_{std::move(tracer)}, sampler_{std::move(sampler)} {}
 
   std::unique_ptr<ot::Span>
   StartSpanWithOptions(string_view operation_name,
                        const ot::StartSpanOptions &options) const
       noexcept override {
-    
+
     // Create the core zipkin span.
     SpanPtr span{new zipkin::Span{}};
     span->setName(operation_name);
@@ -302,7 +302,7 @@ public:
     } else {
       span->setSampled(sampler_->ShouldSample());
     }
-    
+
     Endpoint endpoint{tracer_->serviceName(), tracer_->address()};
 
     // Add a binary annotation for the serviceName.
@@ -391,7 +391,8 @@ makeZipkinOtTracer(const ZipkinOtTracerOptions &options,
   TracerPtr tracer{new Tracer{options.service_name, options.service_address}};
   tracer->setReporter(std::move(reporter));
   SamplerPtr sampler{new ProbabilisticSampler{options.sample_rate}};
-  return std::shared_ptr<ot::Tracer>{new OtTracer{std::move(tracer), std::move(sampler)}};
+  return std::shared_ptr<ot::Tracer>{
+      new OtTracer{std::move(tracer), std::move(sampler)}};
 }
 
 std::shared_ptr<ot::Tracer>

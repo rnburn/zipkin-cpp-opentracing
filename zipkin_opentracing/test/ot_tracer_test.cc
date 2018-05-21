@@ -1,9 +1,9 @@
+#include "../src/sampling.h"
 #include "../src/utility.h"
 #include "in_memory_reporter.h"
 #include <algorithm>
 #include <opentracing/noop.h>
 #include <zipkin/opentracing.h>
-#include "../src/sampling.h"
 
 #define CATCH_CONFIG_MAIN
 #include <zipkin/catch/catch.hpp>
@@ -74,17 +74,20 @@ TEST_CASE("ot_tracer") {
     ZipkinOtTracerOptions no_sampling;
     no_sampling.sample_rate = 0.0;
     auto r1 = new InMemoryReporter();
-    auto no_sampling_tracer = makeZipkinOtTracer(no_sampling, std::unique_ptr<Reporter>(r1));
+    auto no_sampling_tracer =
+        makeZipkinOtTracer(no_sampling, std::unique_ptr<Reporter>(r1));
 
     ZipkinOtTracerOptions always_sample;
     always_sample.sample_rate = 1.0;
     auto r2 = new InMemoryReporter();
-    auto sampling_tracer = makeZipkinOtTracer(always_sample, std::unique_ptr<Reporter>(r2));
+    auto sampling_tracer =
+        makeZipkinOtTracer(always_sample, std::unique_ptr<Reporter>(r2));
 
     auto span_a = no_sampling_tracer->StartSpan("a");
     CHECK(span_a);
     span_a->Finish();
-    auto span_b = sampling_tracer->StartSpan("b", {ChildOf(&span_a->context())});
+    auto span_b =
+        sampling_tracer->StartSpan("b", {ChildOf(&span_a->context())});
     CHECK(span_b);
     span_b->Finish();
 
