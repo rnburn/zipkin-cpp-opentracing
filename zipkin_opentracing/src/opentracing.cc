@@ -106,6 +106,10 @@ public:
     return span_context_.isSampled();
   }
 
+  bool isValid() const {
+    return span_context_.id() != 0 && !span_context_.trace_id().empty();
+  }
+
 private:
   zipkin::SpanContext span_context_;
   mutable std::mutex baggage_mutex_;
@@ -293,10 +297,10 @@ public:
 
     auto parent = findSpanContext(options.references);
 
-    if (!parent) {
-      span->setSampled(sampler_->ShouldSample());
-    } else {
+    if (parent && parent->isValid()) {
       span->setSampled(parent->isSampled());
+    } else {
+      span->setSampled(sampler_->ShouldSample());
     }
     
     Endpoint endpoint{tracer_->serviceName(), tracer_->address()};

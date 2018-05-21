@@ -1,5 +1,6 @@
 #pragma once
 #include <memory>
+#include <algorithm>
 
 namespace zipkin {
   class Sampler {
@@ -10,7 +11,7 @@ namespace zipkin {
 
   class ProbabilisticSampler : public Sampler {
     public:
-      ProbabilisticSampler(double sample_rate) : sample_rate_(sample_rate) {};
+      ProbabilisticSampler(double sample_rate) : sample_rate_(std::max(0.0, std::min(sample_rate, 1.0))) {};
       bool ShouldSample() override;
 
     private:
