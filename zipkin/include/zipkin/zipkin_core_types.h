@@ -569,7 +569,7 @@ private:
   std::string name_;
   uint64_t id_;
   Optional<TraceId> parent_id_;
-  bool sampled_;
+  bool sampled_{true};
   bool debug_;
   std::vector<Annotation> annotations_;
   std::vector<BinaryAnnotation> binary_annotations_;
