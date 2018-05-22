@@ -15,8 +15,9 @@ jobs:
       - image: ubuntu:17.10
     steps:
       - checkout
+      - run: mkdir -p /build
       - run: ./ci/install_dependencies.sh
-      - run: ./ci/do_ci.sh cmake.tsan
+      - run: BUILD_DIR=/build ./ci/do_ci.sh cmake.tsan
       - store_artifacts:
           path: /build/Testing/Temporary/LastTest.log
           destination: Test.log
