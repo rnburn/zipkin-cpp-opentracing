@@ -7,6 +7,9 @@ jobs:
       - checkout
       - run: ./ci/install_dependencies.sh
       - run: ./ci/do_ci.sh cmake.asan
+      - store_artifacts:
+          path: /build/Testing/Temporary/LastTest.log
+          destination: Test.log
   tsan:
     docker:
       - image: ubuntu:17.10
@@ -14,6 +17,9 @@ jobs:
       - checkout
       - run: ./ci/install_dependencies.sh
       - run: ./ci/do_ci.sh cmake.tsan
+      - store_artifacts:
+          path: /build/Testing/Temporary/LastTest.log
+          destination: Test.log
   bazel:
     docker:
       - image: ubuntu:17.10
