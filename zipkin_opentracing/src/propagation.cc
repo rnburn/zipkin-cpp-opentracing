@@ -138,7 +138,6 @@ extractSpanContext(const opentracing::TextMapReader &carrier,
           if (sampled) {
             flags |= sampled_flag;
           }
-          flags |= sampling_set_flag;
         } else if (keyCompare(key, zipkin_parent_span_id)) {
           parent_id = Hex::hexToTraceId(value);
           if (!parent_id.valid()) {
