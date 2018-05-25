@@ -11,7 +11,7 @@ public:
 
 class ProbabilisticSampler : public Sampler {
 public:
-  ProbabilisticSampler(double sample_rate)
+  explicit ProbabilisticSampler(double sample_rate)
       : sample_rate_(std::max(0.0, std::min(sample_rate, 1.0))){};
   bool ShouldSample() override;
 
