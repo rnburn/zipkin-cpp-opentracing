@@ -391,8 +391,7 @@ makeZipkinOtTracer(const ZipkinOtTracerOptions &options,
   TracerPtr tracer{new Tracer{options.service_name, options.service_address}};
   tracer->setReporter(std::move(reporter));
   SamplerPtr sampler{new ProbabilisticSampler{options.sample_rate}};
-  return std::shared_ptr<ot::Tracer>{
-      new OtTracer{std::move(tracer), std::move(sampler)}};
+  return std::make_shared<OtTracer>(std::move(tracer), std::move(sampler));
 }
 
 std::shared_ptr<ot::Tracer>
