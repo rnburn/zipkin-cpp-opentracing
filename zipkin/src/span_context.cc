@@ -8,6 +8,11 @@ SpanContext::SpanContext(const Span &span) {
   trace_id_ = span.traceId();
   id_ = span.id();
   parent_id_ = span.isSetParentId() ? span.parentId() : 0;
+  flags_ = 0;
+
+  if (span.isSampled()) {
+    flags_ |= static_cast<unsigned char>(zipkin::sampled_flag);
+  }
 
   for (const Annotation &annotation : span.annotations()) {
     if (annotation.value() == ZipkinCoreConstants::get().CLIENT_RECV) {

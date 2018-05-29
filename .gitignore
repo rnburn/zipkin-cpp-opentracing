@@ -32,3 +32,5 @@
 *.app
 
 bazel-*
+
+.build/

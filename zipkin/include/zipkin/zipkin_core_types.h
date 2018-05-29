@@ -332,6 +332,9 @@ public:
       : trace_id_(0), name_(), id_(0), debug_(false), monotonic_start_time_(0),
         tracer_(nullptr) {}
 
+  void setSampled(const bool val) { sampled_ = val; }
+  bool isSampled() const { return sampled_; }
+
   /**
    * Sets the span's trace id attribute.
    */
@@ -566,6 +569,7 @@ private:
   std::string name_;
   uint64_t id_;
   Optional<TraceId> parent_id_;
+  bool sampled_{true};
   bool debug_;
   std::vector<Annotation> annotations_;
   std::vector<BinaryAnnotation> binary_annotations_;

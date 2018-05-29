@@ -1,19 +1,22 @@
+#include <opentracing/util.h>
 #include <zipkin/opentracing.h>
 
 #include "propagation.h"
+#include "sampling.h"
 #include "utility.h"
 #include <atomic>
 #include <cstring>
 #include <mutex>
+#include <random>
 #include <unordered_map>
 #include <zipkin/tracer.h>
 #include <zipkin/utility.h>
 #include <zipkin/zipkin_core_types.h>
 
-using opentracing::Value;
 using opentracing::expected;
 using opentracing::make_unexpected;
 using opentracing::string_view;
+using opentracing::Value;
 
 namespace ot = opentracing;
 
@@ -97,6 +100,12 @@ public:
   template <class Carrier> expected<void> Inject(Carrier &writer) const {
     std::lock_guard<std::mutex> lock_guard{baggage_mutex_};
     return injectSpanContext(writer, span_context_, baggage_);
+  }
+
+  bool isSampled() const { return span_context_.isSampled(); }
+
+  bool isValid() const {
+    return span_context_.id() != 0 && !span_context_.trace_id().empty();
   }
 
 private:
@@ -271,16 +280,28 @@ private:
 class OtTracer : public ot::Tracer,
                  public std::enable_shared_from_this<OtTracer> {
 public:
-  explicit OtTracer(TracerPtr &&tracer) : tracer_{std::move(tracer)} {}
+  explicit OtTracer(TracerPtr &&tracer)
+      : tracer_{std::move(tracer)}, sampler_{new ProbabilisticSampler(1.0)} {}
+  explicit OtTracer(TracerPtr &&tracer, SamplerPtr &&sampler)
+      : tracer_{std::move(tracer)}, sampler_{std::move(sampler)} {}
 
   std::unique_ptr<ot::Span>
   StartSpanWithOptions(string_view operation_name,
                        const ot::StartSpanOptions &options) const
       noexcept override {
+
     // Create the core zipkin span.
     SpanPtr span{new zipkin::Span{}};
     span->setName(operation_name);
     span->setTracer(tracer_.get());
+
+    auto parent = findSpanContext(options.references);
+
+    if (parent && parent->isValid()) {
+      span->setSampled(parent->isSampled());
+    } else {
+      span->setSampled(sampler_->ShouldSample());
+    }
 
     Endpoint endpoint{tracer_->serviceName(), tracer_->address()};
 
@@ -329,6 +350,7 @@ public:
 
 private:
   TracerPtr tracer_;
+  SamplerPtr sampler_;
 
   template <class Carrier>
   expected<void> InjectImpl(const ot::SpanContext &sc, Carrier &writer) const
@@ -368,7 +390,8 @@ makeZipkinOtTracer(const ZipkinOtTracerOptions &options,
                    std::unique_ptr<Reporter> &&reporter) {
   TracerPtr tracer{new Tracer{options.service_name, options.service_address}};
   tracer->setReporter(std::move(reporter));
-  return std::shared_ptr<ot::Tracer>{new OtTracer{std::move(tracer)}};
+  SamplerPtr sampler{new ProbabilisticSampler{options.sample_rate}};
+  return std::make_shared<OtTracer>(std::move(tracer), std::move(sampler));
 }
 
 std::shared_ptr<ot::Tracer>

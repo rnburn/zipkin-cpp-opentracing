@@ -58,6 +58,8 @@ public:
       : trace_id_{trace_id}, id_{id}, parent_id_{parent_id}, flags_{flags},
         is_initialized_{true} {}
 
+  bool isSampled() const { return flags_ & zipkin::sampled_flag; }
+
   /**
    * @return the span id as an integer
    */
