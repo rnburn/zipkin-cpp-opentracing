@@ -5,55 +5,18 @@
 #include <zipkin/rapidjson/error/en.h>
 #include <zipkin/rapidjson/schema.h>
 
-const char *const configuration_schema = R"(
-{
-  "$schema": "http://json-schema.org/schema#",
-  "title": "TracerConfiguration",
-  "type": "object",
-  "required": ["service_name"],
-  "properties": {
-    "service_name": {
-      "type": "string"
-    },
-    "service_address": {
-      "type": "string"
-    },
-    "collector_host": {
-      "type": "string"
-    },
-    "collector_port": {
-      "type": "integer",
-      "minimum": 1,
-      "maximum": 65535
-    },
-    "reporting_period": {
-      "type": "integer",
-      "description": 
-        "The time in microseconds between sending successive reports to the collector",
-      "minimum": 1
-    },
-    "max_buffered_spans": {
-      "type": "integer",
-      "description":
-        "The maximum number of spans to buffer before sending them to the collector",
-      "minimum": 1
-    },
-    "sample_rate": {
-      "type": "float",
-      "minimum": 0.0,
-      "maxiumum": 1.0
-    }
-  }
-}
-)";
-
 namespace zipkin {
+
+extern const unsigned char tracer_configuration_schema[];
+extern const int tracer_configuration_schema_size;
+
 opentracing::expected<std::shared_ptr<opentracing::Tracer>>
 OtTracerFactory::MakeTracer(const char *configuration,
                             std::string &error_message) const noexcept try {
   static rapidjson::SchemaDocument schema = [] {
     rapidjson::Document document;
-    document.Parse(configuration_schema);
+    document.Parse(reinterpret_cast<const char *>(tracer_configuration_schema),
+                   tracer_configuration_schema_size);
     if (document.HasParseError()) {
       std::cerr << "Internal Error: Configuration schema is invalid.\n";
       std::terminate();

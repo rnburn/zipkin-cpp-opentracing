@@ -1,0 +1,46 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "title": "TracerConfiguration",
+  "description": "Configuration for a Zipkin tracer",
+  "type": "object",
+  "required": ["service_name"],
+  "properties": {
+    "service_name": {
+      "type": "string",
+      "description": "Specifies default Zipkin endpoint annotation.\nIdentifies the application's service"
+    },
+    "service_address": {
+      "type": "string",
+      "description": "IP address to use with the default Zipkin endpoint annotation"
+    },
+    "collector_host": {
+      "type": "string",
+      "description": "Host to use when connecting to Zipkin's collector"
+    },
+    "collector_port": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 65535,
+      "description": "Port to use when connecting to Zipkin's collector"
+    },
+    "reporting_period": {
+      "type": "integer",
+      "minimum": 1,
+      "description": 
+        "The time in microseconds between sending successive reports to the collector"
+    },
+    "max_buffered_spans": {
+      "type": "integer",
+      "minimum": 1,
+      "description":
+        "The maximum number of spans to buffer before sending them to the collector"
+    },
+    "sample_rate": {
+      "type": "float",
+      "minimum": 0.0,
+      "maxiumum": 1.0,
+      "description": "The probability of sampling a span"
+    }
+  }
+}
+
