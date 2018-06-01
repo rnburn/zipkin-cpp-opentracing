@@ -29,6 +29,8 @@ include_directories(SYSTEM ${CURL_INCLUDE_DIRS})
 
 include_directories(SYSTEM 3rd_party/include)
 
+add_executable(embedfile 3rd_party/embedfile/src/embedfile.c)
+
 include_directories(zipkin/include)
 add_subdirectory(zipkin)
 
