@@ -9,6 +9,8 @@ apt-get install --no-install-recommends --no-install-suggests -y \
                 git \
                 ca-certificates
 
+export OPENTRACING_VERSION=1.4.0
+
 # Compile for a portable cpu architecture
 export CFLAGS="-march=x86-64"
 export CXXFLAGS="-march=x86-64"
@@ -39,7 +41,7 @@ make && make install
 
 # Build OpenTracing
 cd "${BUILD_DIR}"
-git clone -b v1.3.0 https://github.com/opentracing/opentracing-cpp.git
+git clone -b v$OPENTRACING_VERSION https://github.com/opentracing/opentracing-cpp.git
 cd opentracing-cpp
 mkdir .build && cd .build
 cmake -DCMAKE_BUILD_TYPE=Release \
