@@ -36,3 +36,6 @@ add_subdirectory(zipkin)
 
 include_directories(zipkin_opentracing/include)
 add_subdirectory(zipkin_opentracing)
+
+add_custom_target(rpm rpmbuild -bb -v --define '_topdir ${CMAKE_SOURCE_DIR}/.build/BUILD' --define '_origdir ${CMAKE_SOURCE_DIR}' --define '_rpmdir ${CMAKE_SOURCE_DIR}/.build/BUILD/RPMS' ${CMAKE_SOURCE_DIR}/zipkin-cpp-opentracing-devel.spec
+              COMMAND rpmbuild -bb -v  --define '_topdir ${CMAKE_SOURCE_DIR}/.build/BUILD' --define '_origdir ${CMAKE_SOURCE_DIR}' --define '_rpmdir ${CMAKE_SOURCE_DIR}/.build/BUILD/RPMS' --define '_version_num ${ZIPKIN_VERSION_STRING}' ${CMAKE_SOURCE_DIR}/zipkin-cpp-opentracing.spec)
