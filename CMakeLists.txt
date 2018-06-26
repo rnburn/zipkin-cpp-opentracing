@@ -1,3 +1,4 @@
+set(CPACK_RPM_COMPONENT_INSTALL ON)
 cmake_minimum_required(VERSION 3.0)
 
 project(zipkin-opentracing)
@@ -7,6 +8,30 @@ set(ZIPKIN_VERSION_MINOR "4")
 set(ZIPKIN_VERSION_PATCH "0")
 set(ZIPKIN_VERSION_STRING
   "${ZIPKIN_VERSION_MAJOR}.${ZIPKIN_VERSION_MINOR}.${ZIPKIN_VERSION_PATCH}")
+
+# ==============================================================================
+# Set up cpack
+
+SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "C++ implementation of Zipkin")
+SET(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/README.md")
+SET(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE")
+SET(CPACK_RPM_PACKAGE_GROUP "Development/Libraries")
+
+SET(CPACK_PACKAGE_VERSION_MAJOR ${ZIPKIN_VERSION_MAJOR})
+SET(CPACK_PACKAGE_VERSION_MINOR ${ZIPKIN_VERSION_MINOR})
+SET(CPACK_PACKAGE_VERSION_PATCH ${ZIPKIN_VERSION_PATCH})
+set(CPACK_RPM_DIST_POST_INSTALL_SCRIPT_FILE ${CMAKE_SOURCE_DIR}/ldconfig)
+set(CPACK_RPM_DIST_POST_UNINSTALL_SCRIPT_FILE ${CMAKE_SOURCE_DIR}/ldconfig)
+set(CPACK_COMPONENTS_ALL DIST DEVEL)
+set(CPACK_COMPONENTS_GROUPING ONE_PER_GROUP)
+set(CPACK_GENERATOR "RPM")
+set(CPACK_COMPONENTS_IGNORE_GROUPS 1)
+
+set(CPACK_COMPONENT_DIST_REQUIRED TRUE)
+set(CPACK_COMPONENT_DEVEL_REQUIRED TRUE)
+
+include(CPack)
+# ==============================================================================
 
 option(BUILD_SHARED_LIBS "Build as a shared library" ON)
 option(BUILD_STATIC_LIBS "Build as a static library" ON)
@@ -37,5 +62,17 @@ add_subdirectory(zipkin)
 include_directories(zipkin_opentracing/include)
 add_subdirectory(zipkin_opentracing)
 
-add_custom_target(rpm rpmbuild -bb -v --define '_topdir ${CMAKE_SOURCE_DIR}/.build/BUILD' --define '_origdir ${CMAKE_SOURCE_DIR}' --define '_rpmdir ${CMAKE_SOURCE_DIR}/.build/BUILD/RPMS' ${CMAKE_SOURCE_DIR}/zipkin-cpp-opentracing-devel.spec
-              COMMAND rpmbuild -bb -v  --define '_topdir ${CMAKE_SOURCE_DIR}/.build/BUILD' --define '_origdir ${CMAKE_SOURCE_DIR}' --define '_rpmdir ${CMAKE_SOURCE_DIR}/.build/BUILD/RPMS' --define '_version_num ${ZIPKIN_VERSION_STRING}' ${CMAKE_SOURCE_DIR}/zipkin-cpp-opentracing.spec)
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/zipkin/include/zipkin/
+        DESTINATION include/zipkin/
+        COMPONENT DEVEL)
+install(FILES ${CMAKE_SOURCE_DIR}/zipkin_opentracing/include/zipkin/opentracing.h
+        DESTINATION include/zipkin/
+        COMPONENT DEVEL)
+install(FILES ${CMAKE_BINARY_DIR}/output/libzipkin_opentracing.so.${ZIPKIN_VERSION_STRING}
+        DESTINATION lib64/
+        COMPONENT DIST)
+install(FILES ${CMAKE_BINARY_DIR}/output/libzipkin.so.${ZIPKIN_VERSION_STRING}
+        DESTINATION lib64/
+        COMPONENT DIST)
+cpack_add_component(DIST)
+cpack_add_component(DEVEL)
