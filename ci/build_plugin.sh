@@ -9,7 +9,7 @@ apt-get install --no-install-recommends --no-install-suggests -y \
                 git \
                 ca-certificates
 
-export OPENTRACING_VERSION=1.4.0
+export OPENTRACING_VERSION=1.5.0
 
 # Compile for a portable cpu architecture
 export CFLAGS="-march=x86-64"
