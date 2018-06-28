@@ -20,8 +20,8 @@ SET(CPACK_RPM_PACKAGE_GROUP "Development/Libraries")
 SET(CPACK_PACKAGE_VERSION_MAJOR ${ZIPKIN_VERSION_MAJOR})
 SET(CPACK_PACKAGE_VERSION_MINOR ${ZIPKIN_VERSION_MINOR})
 SET(CPACK_PACKAGE_VERSION_PATCH ${ZIPKIN_VERSION_PATCH})
-set(CPACK_RPM_DIST_POST_INSTALL_SCRIPT_FILE ${CMAKE_SOURCE_DIR}/ldconfig)
-set(CPACK_RPM_DIST_POST_UNINSTALL_SCRIPT_FILE ${CMAKE_SOURCE_DIR}/ldconfig)
+set(CPACK_RPM_DIST_POST_INSTALL_SCRIPT_FILE ${CMAKE_SOURCE_DIR}/scripts/runldconfig)
+set(CPACK_RPM_DIST_POST_UNINSTALL_SCRIPT_FILE ${CMAKE_SOURCE_DIR}/scripts/runldconfig)
 set(CPACK_COMPONENTS_ALL DIST DEVEL)
 set(CPACK_COMPONENTS_GROUPING ONE_PER_GROUP)
 set(CPACK_GENERATOR "RPM")
@@ -61,18 +61,3 @@ add_subdirectory(zipkin)
 
 include_directories(zipkin_opentracing/include)
 add_subdirectory(zipkin_opentracing)
-
-install(DIRECTORY ${CMAKE_SOURCE_DIR}/zipkin/include/zipkin/
-        DESTINATION include/zipkin/
-        COMPONENT DEVEL)
-install(FILES ${CMAKE_SOURCE_DIR}/zipkin_opentracing/include/zipkin/opentracing.h
-        DESTINATION include/zipkin/
-        COMPONENT DEVEL)
-install(FILES ${CMAKE_BINARY_DIR}/output/libzipkin_opentracing.so.${ZIPKIN_VERSION_STRING}
-        DESTINATION lib64/
-        COMPONENT DIST)
-install(FILES ${CMAKE_BINARY_DIR}/output/libzipkin.so.${ZIPKIN_VERSION_STRING}
-        DESTINATION lib64/
-        COMPONENT DIST)
-cpack_add_component(DIST)
-cpack_add_component(DEVEL)

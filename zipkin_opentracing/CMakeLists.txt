@@ -11,7 +11,9 @@ add_custom_command(
   DEPENDS tracer_configuration.schema.json
 )
 
-install(DIRECTORY include/zipkin DESTINATION include)
+install(DIRECTORY include/zipkin
+        COMPONENT DEVEL
+        DESTINATION include)
 set(ZIPKIN_OPENTRACING_SRCS src/utility.cc
                             src/propagation.cc
                             src/dynamic_load.cc
@@ -27,6 +29,7 @@ if (BUILD_SHARED_LIBS)
   set_target_properties(zipkin_opentracing PROPERTIES VERSION ${ZIPKIN_VERSION_STRING}
                                                       SOVERSION ${ZIPKIN_VERSION_MAJOR})
   install(TARGETS zipkin_opentracing 
+          COMPONENT DIST
           LIBRARY DESTINATION lib)
 endif()
 
