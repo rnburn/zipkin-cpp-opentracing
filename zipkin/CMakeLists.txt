@@ -1,4 +1,6 @@
-install(DIRECTORY include/zipkin DESTINATION include)
+install(DIRECTORY include/zipkin
+        COMPONENT DEVEL
+        DESTINATION include)
 set(ZIPKIN_SRCS src/zipkin_core_types.cc
                  src/utility.cc
                  src/hex.cc
@@ -20,6 +22,7 @@ if (BUILD_SHARED_LIBS)
   set_target_properties(zipkin PROPERTIES VERSION ${ZIPKIN_VERSION_STRING}
                                           SOVERSION ${ZIPKIN_VERSION_MAJOR})
   install(TARGETS zipkin 
+          COMPONENT DIST
           LIBRARY DESTINATION lib)
 endif()
 
