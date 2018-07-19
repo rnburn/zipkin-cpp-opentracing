@@ -37,7 +37,7 @@ TEST_CASE("OtTracerFactory") {
       "service_name": "abc",
       "collector_port": 80,
       "collector_host": "foo.bar",
-      "sample_rate": "0.1"
+      "sample_rate": 0.1
     })";
     auto tracer_maybe = tracer_factory.MakeTracer(configuration, error_message);
     CHECK(error_message == "");
