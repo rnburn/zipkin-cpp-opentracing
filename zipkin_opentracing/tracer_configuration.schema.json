@@ -36,9 +36,9 @@
         "The maximum number of spans to buffer before sending them to the collector"
     },
     "sample_rate": {
-      "type": "float",
+      "type": "number",
       "minimum": 0.0,
-      "maxiumum": 1.0,
+      "maximum": 1.0,
       "description": "The probability of sampling a span"
     }
   }
