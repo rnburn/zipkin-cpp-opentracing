@@ -10,14 +10,15 @@
 #include <string>
 #include <vector>
 
+#include <zipkin/randutils/randutils.h>
 #include <zipkin/rapidjson/document.h>
 #include <zipkin/rapidjson/stringbuffer.h>
 #include <zipkin/rapidjson/writer.h>
 
 namespace zipkin {
 uint64_t RandomUtil::generateId() {
-  static thread_local std::mt19937_64 rand_source{std::random_device{}()};
-  return rand_source();
+  static thread_local randutils::mt19937_64_rng rand_source;
+  return rand_source.engine()();
 }
 
 bool StringUtil::atoul(const char *str, uint64_t &out, int base) {
