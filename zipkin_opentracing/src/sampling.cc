@@ -3,9 +3,10 @@
 #include <zipkin/randutils/randutils.h>
 
 namespace zipkin {
+std::mt19937_64 &getTlsRandomEngine();
+
 bool ProbabilisticSampler::ShouldSample() {
-  static thread_local randutils::mt19937_rng rng;
   std::bernoulli_distribution dist(sample_rate_);
-  return dist(rng.engine());
+  return dist(getTlsRandomEngine());
 }
 } // namespace zipkin
