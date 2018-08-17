@@ -6,6 +6,7 @@
 #include <cstdint>
 #include <iterator>
 #include <limits>
+#include <pthread.h>
 #include <random>
 #include <string>
 #include <vector>
@@ -16,10 +17,33 @@
 #include <zipkin/rapidjson/writer.h>
 
 namespace zipkin {
-uint64_t RandomUtil::generateId() {
-  static thread_local randutils::mt19937_64_rng rand_source;
-  return rand_source.engine()();
+// Wrapper for a seeded random number generator that works with forking.
+//
+// See https://stackoverflow.com/q/51882689/4447365 and
+//     https://github.com/opentracing-contrib/nginx-opentracing/issues/52
+namespace {
+class TlsRandomNumberGenerator {
+public:
+  TlsRandomNumberGenerator() { pthread_atfork(nullptr, nullptr, onFork); }
+
+  static std::mt19937_64 &engine() { return base_generator_.engine(); }
+
+private:
+  static thread_local randutils::mt19937_64_rng base_generator_;
+
+  static void onFork() { base_generator_.seed(); }
+};
+
+thread_local randutils::mt19937_64_rng
+    TlsRandomNumberGenerator::base_generator_;
+} // namespace
+
+std::mt19937_64 &getTlsRandomEngine() {
+  static TlsRandomNumberGenerator rng;
+  return TlsRandomNumberGenerator::engine();
 }
+
+uint64_t RandomUtil::generateId() { return getTlsRandomEngine()(); }
 
 bool StringUtil::atoul(const char *str, uint64_t &out, int base) {
   if (strlen(str) == 0) {
