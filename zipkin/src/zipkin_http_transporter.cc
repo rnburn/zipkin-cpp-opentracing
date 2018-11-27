@@ -15,7 +15,7 @@ static std::string getUrl(const char *collector_host, uint32_t collector_port) {
 
 ZipkinHttpTransporter::ZipkinHttpTransporter(const char *collector_host,
                                              uint32_t collector_port,
-                                             long collector_timeout) {
+                                             std::chrono::milliseconds collector_timeout) {
   auto rcode = curl_easy_setopt(handle_, CURLOPT_URL,
                                 getUrl(collector_host, collector_port).c_str());
   if (rcode != CURLE_OK) {
@@ -34,7 +34,7 @@ ZipkinHttpTransporter::ZipkinHttpTransporter(const char *collector_host,
     throw CurlError{rcode};
   }
 
-  rcode = curl_easy_setopt(handle_, CURLOPT_TIMEOUT_MS, collector_timeout);
+  rcode = curl_easy_setopt(handle_, CURLOPT_TIMEOUT_MS, collector_timeout.count());
   if (rcode != CURLE_OK) {
     throw CurlError{rcode};
   }
@@ -59,7 +59,7 @@ void ZipkinHttpTransporter::transportSpans(SpanBuffer &spans) try {
 
 ReporterPtr makeHttpReporter(const char *collector_host,
                              uint32_t collector_port,
-                             long collector_timeout,
+                             std::chrono::milliseconds collector_timeout,
                              SteadyClock::duration reporting_period,
                              size_t max_buffered_spans) try {
   std::unique_ptr<Transporter> transporter{

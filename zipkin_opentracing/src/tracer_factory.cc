@@ -53,7 +53,8 @@ OtTracerFactory::MakeTracer(const char *configuration,
     options.collector_port = document["collector_port"].GetInt();
   }
   if (document.HasMember("collector_timeout")) {
-    options.collector_timeout = document["collector_timeout"].GetInt();
+    options.collector_timeout =
+            std::chrono::milliseconds{document["collector_timeout"].GetInt()};
   }
   if (document.HasMember("reporting_period")) {
     options.reporting_period =

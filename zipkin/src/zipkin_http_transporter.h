@@ -90,7 +90,8 @@ public:
    *
    * Throws CurlError if the handle can't be initialized.
    */
-  ZipkinHttpTransporter(const char *collector_host, uint32_t collector_port, long collector_timeout = DEFAULT_TRANSPORT_TIMEOUT);
+  ZipkinHttpTransporter(const char *collector_host, uint32_t collector_port,
+          std::chrono::milliseconds collector_timeout = DEFAULT_TRANSPORT_TIMEOUT);
 
   /**
    * Destructor.
