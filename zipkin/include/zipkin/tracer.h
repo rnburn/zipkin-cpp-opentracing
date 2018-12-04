@@ -9,6 +9,7 @@ namespace zipkin {
 const SteadyClock::duration DEFAULT_REPORTING_PERIOD =
     std::chrono::milliseconds{500};
 const size_t DEFAULT_SPAN_BUFFER_SIZE = 1000;
+const std::chrono::milliseconds DEFAULT_TRANSPORT_TIMEOUT = std::chrono::milliseconds{0};
 
 /**
  * Abstract class that delegates to users of the Tracer class the responsibility
@@ -55,6 +56,7 @@ typedef std::unique_ptr<Reporter> ReporterPtr;
  */
 ReporterPtr makeHttpReporter(
     const char *collector_host, uint32_t collector_port,
+    std::chrono::milliseconds collector_timeout = DEFAULT_TRANSPORT_TIMEOUT,
     SteadyClock::duration reporting_period = DEFAULT_REPORTING_PERIOD,
     size_t max_buffered_spans = DEFAULT_SPAN_BUFFER_SIZE);
 
