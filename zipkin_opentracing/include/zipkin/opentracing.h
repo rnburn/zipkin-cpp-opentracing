@@ -12,6 +12,7 @@ struct ZipkinOtTracerOptions {
   double sample_rate = 1.0;
 
   std::string service_name;
+  std::string collector_endpoint = "/api/v1/spans";
   IpAddress service_address;
 };
 
