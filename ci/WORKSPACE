@@ -1,5 +1,7 @@
 workspace(name = "com_github_rnburn_zipkin_opentracing")
 
+load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
+
 git_repository(
     name = "io_opentracing_cpp",
     remote = "https://github.com/opentracing/opentracing-cpp",
