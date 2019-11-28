@@ -2,7 +2,7 @@ version: 2
 jobs:
   asan:
     docker:
-      - image: ubuntu:17.10
+      - image: ubuntu:18.04
     steps:
       - checkout
       - run: ./ci/install_dependencies.sh
@@ -12,7 +12,7 @@ jobs:
           destination: Test.log
   tsan:
     docker:
-      - image: ubuntu:17.10
+      - image: ubuntu:18.04
     steps:
       - checkout
       - run: mkdir -p /build
@@ -23,7 +23,7 @@ jobs:
           destination: Test.log
   bazel:
     docker:
-      - image: ubuntu:17.10
+      - image: ubuntu:18.04
     steps:
       - checkout
       - run: ./ci/install_dependencies.sh
@@ -31,7 +31,7 @@ jobs:
       - run: ./ci/do_ci.sh bazel.build
   plugin:
     docker:
-      - image: ubuntu:17.10
+      - image: ubuntu:18.04
     steps:
       - checkout
       - run: ./ci/do_ci.sh cmake.plugin
@@ -40,7 +40,7 @@ jobs:
           destination: libzipkin_opentracing_plugin.so
   release:
     docker:
-      - image: ubuntu:17.10
+      - image: ubuntu:18.04
     steps:
       - run: apt-get -qq update; apt-get -y install git ssh
       - checkout
