@@ -24,6 +24,7 @@ namespace zipkin {
  */
 struct AnnotationSet {
   AnnotationSet() : cs_(false), cr_(false), ss_(false), sr_(false) {}
+  AnnotationSet(const AnnotationSet &set) : cs_{set.cs_}, cr_{set.cr_}, ss_{set.ss_}, sr_{set.sr_} {}
   bool cs_ : 1;
   bool cr_ : 1;
   bool ss_ : 1;
@@ -57,6 +58,15 @@ public:
               const Optional<TraceId> &parent_id, flags_t flags)
       : trace_id_{trace_id}, id_{id}, parent_id_{parent_id}, flags_{flags},
         is_initialized_{true} {}
+
+  /**
+   * Copy constructor that creates a context object from the given SpanContext
+   * instance.
+   */
+  SpanContext(const SpanContext &span)
+      : trace_id_{span.trace_id_}, id_{span.id_}, parent_id_{span.parent_id_},
+        annotation_values_{span.annotation_values_}, flags_{span.flags_},
+        is_initialized_{span.is_initialized_} {}
 
   bool isSampled() const { return flags_ & zipkin::sampled_flag; }
 
