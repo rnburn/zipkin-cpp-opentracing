@@ -24,7 +24,7 @@ public:
 
 private:
   IpVersion version_;
-  uint32_t port_;
   std::string friendly_address_;
+  uint32_t port_;
 };
 } // namespace zipkin
