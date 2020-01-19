@@ -2,6 +2,7 @@
 #include "../src/utility.h"
 #include "in_memory_reporter.h"
 #include <algorithm>
+#include <stdexcept>
 #include <opentracing/noop.h>
 #include <zipkin/opentracing.h>
 
@@ -28,6 +29,8 @@ static bool hasTag(const Span &span, ot::string_view key, ot::Value value) {
           return tag_annotation.valueInt64() == annotation.valueInt64();
         case DOUBLE:
           return tag_annotation.valueDouble() == annotation.valueDouble();
+        default:
+          throw std::runtime_error("Unhandled annotation type");
         }
       });
 }
