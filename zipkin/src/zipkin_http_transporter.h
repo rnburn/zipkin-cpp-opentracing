@@ -46,6 +46,8 @@ public:
 
   CURL *operator->() { return handle_; }
 
+  template <class... Types> void setopt(CURLoption option, Types... args);
+
 private:
   CURL *handle_;
 };
