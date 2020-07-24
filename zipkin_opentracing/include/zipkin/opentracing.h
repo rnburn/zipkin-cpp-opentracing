@@ -1,3 +1,5 @@
+#pragma once
+
 #include <opentracing/tracer.h>
 #include <zipkin/ip_address.h>
 #include <zipkin/tracer.h>
