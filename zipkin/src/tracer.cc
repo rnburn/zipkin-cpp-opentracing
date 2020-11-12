@@ -13,8 +13,8 @@ SpanPtr Tracer::startSpan(const std::string &span_name, SystemTime timestamp) {
   // Create an all-new span, with no parent id
   SpanPtr span_ptr(new Span());
   span_ptr->setName(span_name);
-  uint64_t random_number = RandomUtil::generateId();
-  span_ptr->setId(random_number);
+  TraceId random_number(RandomUtil::generateId(), RandomUtil::generateId());
+  span_ptr->setId(random_number.low());
   span_ptr->setTraceId(random_number);
   int64_t start_time_micro =
       std::chrono::duration_cast<std::chrono::microseconds>(
@@ -56,7 +56,7 @@ SpanPtr Tracer::startSpan(const std::string &span_name, SystemTime timestamp,
     span_ptr->setName(span_name);
 
     // Set the parent id to the id of the previous span
-    span_ptr->setParentId(previous_context.id());
+    span_ptr->setParentId(TraceId(previous_context.id()));
 
     // Set the CS annotation value
     annotation.setValue(ZipkinCoreConstants::get().CLIENT_SEND);

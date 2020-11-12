@@ -9,7 +9,7 @@ public:
 
   TraceId(uint64_t high, uint64_t low) : high_{high}, low_{low} {}
 
-  TraceId(uint64_t low) : TraceId{0, low} {}
+  explicit TraceId(uint64_t low) : TraceId{0, low} {}
 
   uint64_t high() const { return high_; }
 

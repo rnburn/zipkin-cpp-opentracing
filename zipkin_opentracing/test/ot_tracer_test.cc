@@ -29,11 +29,12 @@ static bool hasTag(const Span &span, ot::string_view key, ot::Value value) {
         case DOUBLE:
           return tag_annotation.valueDouble() == annotation.valueDouble();
         }
+        return false;
       });
 }
 
 static bool IsChildOf(const zipkin::Span &a, const zipkin::Span &b) {
-  return a.isSetParentId() && a.parentId() == b.id() &&
+  return a.isSetParentId() && a.parentId().low() == b.id() &&
          a.traceId() == b.traceId();
 }
 

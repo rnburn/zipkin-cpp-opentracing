@@ -157,9 +157,9 @@ public:
     span_->setId(RandomUtil::generateId());
     if (parent_span_context) {
       span_->setTraceId(parent_span_context->span_context_.trace_id());
-      span_->setParentId(parent_span_context->span_context_.id());
+      span_->setParentId(TraceId(parent_span_context->span_context_.id()));
     } else {
-      span_->setTraceId(RandomUtil::generateId());
+      span_->setTraceId(TraceId(RandomUtil::generateId(), RandomUtil::generateId()));
     }
 
     // Set timestamp.
