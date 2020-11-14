@@ -40,6 +40,20 @@ static bool IsChildOf(const zipkin::Span &a, const zipkin::Span &b) {
          a.traceId() == b.traceId();
 }
 
+class TextMapCarrier : public ot::TextMapWriter {
+public:
+  TextMapCarrier(std::unordered_map<std::string, std::string> &text_map)
+      : text_map_(text_map) {}
+
+  ot::expected<void> Set(ot::string_view key, ot::string_view value) const override {
+    text_map_[key] = value;
+    return {};
+  }
+
+private:
+  std::unordered_map<std::string, std::string> &text_map_;
+};
+
 TEST_CASE("ot_tracer") {
   auto reporter = new InMemoryReporter();
   ZipkinOtTracerOptions options;
@@ -169,5 +183,59 @@ TEST_CASE("ot_tracer") {
     span->SetTag("abc", 123);
     span->Finish();
     CHECK(hasTag(reporter->top(), "abc", 123));
+  }
+
+  SECTION("Get SpanContext and check that it is valid after Finish") {
+    auto span = tracer->StartSpan("a");
+    CHECK(span);
+    span->SetTag("abc", 123);
+    auto &ctx = span->context();
+    span->Finish();
+    auto trace_id = ctx.ToTraceID();
+    CHECK(trace_id != "");
+    auto span_id = ctx.ToSpanID();
+    CHECK(span_id != "");
+  }
+
+  SECTION("Check SpanContext.Clone() preserves attributes") {
+    auto span = tracer->StartSpan("a");
+    CHECK(span);
+    span->SetTag("abc", 123);
+    span->SetBaggageItem("a", "1");
+    auto &ctx = span->context();
+    span->Finish();
+    auto ctx2 = ctx.Clone();
+
+    CHECK(ctx.ToTraceID() == ctx2->ToTraceID());
+    CHECK(ctx.ToSpanID() == ctx2->ToSpanID());
+
+    std::unordered_map<std::string, std::string> items;
+    ctx.ForeachBaggageItem(
+        [&items] (const std::string& key, const std::string& value) {
+            items[key] = value;
+            return true;
+        }
+    );
+
+    std::unordered_map<std::string, std::string> items2;
+    ctx2->ForeachBaggageItem(
+        [&items2] (const std::string& key, const std::string& value) {
+            items2[key] = value;
+            return true;
+        }
+    );
+    CHECK(items == items2);
+
+    // Cross-check: serialize span context to a carrier
+    // and compare low-level representation
+    items.clear();
+    items2.clear();
+
+    TextMapCarrier carrier{items};
+    tracer->Inject(ctx, carrier);
+    TextMapCarrier carrier2{items2};
+    tracer->Inject(*ctx2, carrier2);
+
+    CHECK(items == items2);
   }
 }

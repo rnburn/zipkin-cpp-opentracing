@@ -11,7 +11,7 @@ apt-get install --no-install-recommends --no-install-suggests -y \
 
 # Build OpenTracing
 cd /
-export OPENTRACING_VERSION=1.5.0
+export OPENTRACING_VERSION=1.6.0
 git clone -b v$OPENTRACING_VERSION https://github.com/opentracing/opentracing-cpp.git
 cd opentracing-cpp
 mkdir .build && cd .build
