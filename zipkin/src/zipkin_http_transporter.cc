@@ -7,17 +7,17 @@
 #include <iostream>
 
 namespace zipkin {
-static std::string getUrl(const char *collector_host, uint32_t collector_port) {
+static std::string getUrl(const char *collector_host, uint32_t collector_port, const char *collector_endpoint) {
   return std::string{"http://"} + collector_host + ":" +
-         std::to_string(collector_port) +
-         ZipkinCoreConstants::get().DEFAULT_COLLECTOR_ENDPOINT;
+         std::to_string(collector_port) + collector_endpoint;
 }
 
 ZipkinHttpTransporter::ZipkinHttpTransporter(const char *collector_host,
                                              uint32_t collector_port,
+                                             const char *collector_endpoint,
                                              std::chrono::milliseconds collector_timeout) {
   auto rcode = curl_easy_setopt(handle_, CURLOPT_URL,
-                                getUrl(collector_host, collector_port).c_str());
+                                getUrl(collector_host, collector_port, collector_endpoint).c_str());
   if (rcode != CURLE_OK) {
     throw CurlError{rcode};
   }
@@ -59,11 +59,13 @@ void ZipkinHttpTransporter::transportSpans(SpanBuffer &spans) try {
 
 ReporterPtr makeHttpReporter(const char *collector_host,
                              uint32_t collector_port,
+                             const char *collector_endpoint,
                              std::chrono::milliseconds collector_timeout,
                              SteadyClock::duration reporting_period,
                              size_t max_buffered_spans) try {
   std::unique_ptr<Transporter> transporter{
-      new ZipkinHttpTransporter{collector_host, collector_port, collector_timeout}};
+      new ZipkinHttpTransporter{collector_host, collector_port, collector_endpoint,
+          collector_timeout}};
   std::unique_ptr<Reporter> reporter{new ReporterImpl{
       std::move(transporter), reporting_period, max_buffered_spans}};
   return reporter;

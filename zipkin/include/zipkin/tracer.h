@@ -55,7 +55,7 @@ typedef std::unique_ptr<Reporter> ReporterPtr;
  * @return a Reporter object.
  */
 ReporterPtr makeHttpReporter(
-    const char *collector_host, uint32_t collector_port,
+    const char *collector_host, uint32_t collector_port, const char* collecotor_endpoint,
     std::chrono::milliseconds collector_timeout = DEFAULT_TRANSPORT_TIMEOUT,
     SteadyClock::duration reporting_period = DEFAULT_REPORTING_PERIOD,
     size_t max_buffered_spans = DEFAULT_SPAN_BUFFER_SIZE);

@@ -35,7 +35,6 @@ public:
 
   const std::string ALWAYS_SAMPLE = "1";
 
-  const std::string DEFAULT_COLLECTOR_ENDPOINT = "/api/v1/spans";
 };
 
 typedef ConstSingleton<ZipkinCoreConstantValues> ZipkinCoreConstants;
