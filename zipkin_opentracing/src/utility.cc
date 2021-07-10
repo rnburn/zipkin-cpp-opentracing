@@ -78,48 +78,76 @@ static std::string toJson(const Value &value) {
 }
 
 namespace {
-struct ValueVisitor {
-  BinaryAnnotation &annotation;
+
+struct SetValueVisitor {
+  BinaryAnnotation& annotation;
   const Value &original_value;
 
+  // natively handled types
+
   void operator()(bool value) const {
-    annotation.setValue(std::to_string(value));
+    annotation.setValue(value);
   }
 
   void operator()(double value) const {
-    annotation.setValue(std::to_string(value));
+    annotation.setValue(value);
   }
 
   void operator()(int64_t value) const {
-    annotation.setValue(std::to_string(value));
+    annotation.setValue(value);
   }
+
+  void operator()(const std::string &s) const {
+    annotation.setValue(s);
+  }
+
+  // overrides
 
   void operator()(uint64_t value) const {
     // There's no uint64_t value type so cast to an int64_t.
-    annotation.setValue(std::to_string(value));
+    int64_t cast = value;
+    (*this)(cast);
   }
 
-  void operator()(const std::string &s) const { annotation.setValue(s); }
+  void operator()(std::nullptr_t) const {
+     (*this)("0");
+  }
 
-  void operator()(std::nullptr_t) const { annotation.setValue("0"); }
-
-  void operator()(const char *s) const { annotation.setValue(std::string{s}); }
+  void operator()(const char *s) const {
+     (*this)(std::string(s));
+  }
 
   void operator()(const Values & /*unused*/) const {
-    annotation.setValue(toJson(original_value));
+    (*this)(toJson(original_value));
   }
 
   void operator()(const Dictionary & /*unused*/) const {
-    annotation.setValue(toJson(original_value));
+    (*this)(toJson(original_value));
   }
 };
+
 } // anonymous namespace
 
 BinaryAnnotation toBinaryAnnotation(string_view key, const Value &value) {
   BinaryAnnotation annotation;
   annotation.setKey(key);
-  ValueVisitor value_visitor{annotation, value};
-  apply_visitor(value_visitor, value);
+  SetValueVisitor visitor{annotation, value};
+  apply_visitor(visitor, value);
   return annotation;
 }
+
+Annotation toAnnotation(const std::vector<std::pair<string_view, Value>>& fields) {
+  rapidjson::StringBuffer buffer;
+  JsonWriter writer(buffer);
+  writer.StartObject();
+  for (auto & field : fields) {
+    writer.Key(field.first.data());
+    toJson(writer, field.second);
+  }
+  writer.EndObject();
+  Annotation annotation;
+  annotation.setValue(buffer.GetString());
+  return annotation;
+}
+
 } // namespace zipkin

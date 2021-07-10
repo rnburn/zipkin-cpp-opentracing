@@ -133,6 +133,17 @@ static const OtSpanContext *findSpanContext(
   return nullptr;
 }
 
+static void appendAnnotations(Span& span, const std::vector<ot::LogRecord>& log_records, Endpoint endpoint) {
+  for (const auto &lr : log_records) {
+    const auto timestamp = std::chrono::duration_cast<std::chrono::microseconds>(
+                                    lr.timestamp.time_since_epoch()).count();
+    Annotation annotation = toAnnotation({ lr.fields.begin(), lr.fields.end() });
+    annotation.setTimestamp(timestamp);
+    annotation.setEndpoint(endpoint);
+    span.addAnnotation(annotation);
+  }
+}
+
 class OtSpan : public ot::Span {
 public:
   OtSpan(std::shared_ptr<const ot::Tracer> &&tracer_owner, SpanPtr &&span_owner,
@@ -200,7 +211,7 @@ public:
             .count());
     span_->setDuration(duration_microsecs);
 
-    // Set tags and finish
+    // Set tags, log records and finish
     std::lock_guard<std::mutex> lock{mutex_};
 
     // Set appropriate CS/SR/SS/CR annotations if span.kind is set.
@@ -232,6 +243,12 @@ public:
     for (const auto &tag : tags_) {
       span_->addBinaryAnnotation(toBinaryAnnotation(tag.first, tag.second));
     }
+
+    std::vector<ot::LogRecord> log_records;
+    log_records.swap(log_records_);
+    appendAnnotations(*span_, log_records, endpoint_);
+    appendAnnotations(*span_, options.log_records, endpoint_);
+
     span_->finish();
   } catch (const std::bad_alloc &) {
     // Do nothing if memory allocation fails.
@@ -260,8 +277,10 @@ public:
     return span_context_.baggageItem(restricted_key);
   }
 
-  void Log(std::initializer_list<std::pair<string_view, Value>>
-               fields) noexcept override {}
+  void Log(std::initializer_list<std::pair<string_view, Value>> fields) noexcept override {
+    std::lock_guard<std::mutex> lock_guard{mutex_};
+    log_records_.push_back({ SystemClock::now(), { fields.begin(), fields.end() } });
+  }
 
   void Log(SystemTime timestamp, std::initializer_list<std::pair<string_view, Value>>
                fields) noexcept override {}
@@ -281,10 +300,11 @@ private:
   OtSpanContext span_context_;
   SteadyTime start_steady_timestamp_;
 
-  // Mutex protects tags_ and span_
+  // Mutex protects tags_, log_records_ and span_
   std::atomic<bool> is_finished_{false};
   std::mutex mutex_;
   std::unordered_map<std::string, Value> tags_;
+  std::vector<ot::LogRecord> log_records_;
   SpanPtr span_;
 };
 
