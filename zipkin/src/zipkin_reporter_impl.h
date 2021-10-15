@@ -58,6 +58,7 @@ private:
   size_t max_buffered_spans_;
 
   bool write_exit_ = false;
+  bool need_notify = true;
   std::thread writer_;
   int64_t num_spans_reported_ = 0;
   std::atomic<int64_t> num_spans_flushed_{0};

@@ -24,8 +24,10 @@ void ReporterImpl::reportSpan(const Span &span) {
     num_spans_reported_ += spans_.addSpan(span);
     is_full = spans_.pendingSpans() == max_buffered_spans_;
   }
-  if (is_full)
+  if (is_full && need_notify) {
+    need_notify = false;
     write_cond_.notify_one();
+  }
 }
 
 bool ReporterImpl::flushWithTimeout(
@@ -51,6 +53,7 @@ bool ReporterImpl::waitUntilNextReport(const SteadyTime &due_time) {
   std::unique_lock<std::mutex> lock{write_mutex_};
   write_cond_.wait_until(lock, due_time, [this] { return this->write_exit_; });
   if (!write_exit_) {
+    need_notify = true;
     inflight_spans_.swap(spans_);
   }
   return !write_exit_;
