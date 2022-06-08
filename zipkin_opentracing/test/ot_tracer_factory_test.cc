@@ -23,8 +23,7 @@ TEST_CASE("OtTracerFactory") {
           "fails.") {
     const char *configuration = R"(
     {
-      "service_name": "abc",
-      "collector_port": 0
+      "service_name": "abc"
     })";
     auto tracer_maybe = tracer_factory.MakeTracer(configuration, error_message);
     CHECK(error_message != "");
@@ -35,8 +34,7 @@ TEST_CASE("OtTracerFactory") {
     const char *configuration = R"(
     {
       "service_name": "abc",
-      "collector_port": 80,
-      "collector_host": "foo.bar",
+      "collector_base_url": "http://foo.bar:80",
       "sample_rate": 0.1
     })";
     auto tracer_maybe = tracer_factory.MakeTracer(configuration, error_message);

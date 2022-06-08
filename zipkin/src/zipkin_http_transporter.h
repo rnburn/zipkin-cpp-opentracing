@@ -83,14 +83,12 @@ public:
   /**
    * Constructor.
    *
-   * @param collector_host The host to use when sending spans to the Zipkin
-   * service.
-   * @param collector_port The port to use when sending spans to the Zipkin service.
+   * @param collector_base_url The base url of the collector. eg. http://localhost:9411
    * @param collector_timeout Timeout for http requests
    *
    * Throws CurlError if the handle can't be initialized.
    */
-  ZipkinHttpTransporter(const char *collector_host, uint32_t collector_port,
+  ZipkinHttpTransporter(const char *collector_base_url,
           std::chrono::milliseconds collector_timeout = DEFAULT_TRANSPORT_TIMEOUT);
 
   /**

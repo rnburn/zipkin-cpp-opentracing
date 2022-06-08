@@ -408,7 +408,7 @@ makeZipkinOtTracer(const ZipkinOtTracerOptions &options,
 std::shared_ptr<ot::Tracer>
 makeZipkinOtTracer(const ZipkinOtTracerOptions &options) {
   auto reporter =
-      makeHttpReporter(options.collector_host.c_str(), options.collector_port,
+      makeHttpReporter(options.collector_base_url.c_str(),
                        options.collector_timeout, options.reporting_period,
                        options.max_buffered_spans);
   return makeZipkinOtTracer(options, std::move(reporter));

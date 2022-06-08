@@ -6,8 +6,7 @@
 
 namespace zipkin {
 struct ZipkinOtTracerOptions {
-  std::string collector_host = "localhost";
-  uint32_t collector_port = 9411;
+  std::string collector_base_url = "http://localhost:9411";
   std::chrono::milliseconds collector_timeout = DEFAULT_TRANSPORT_TIMEOUT;
   SteadyClock::duration reporting_period = DEFAULT_REPORTING_PERIOD;
   size_t max_buffered_spans = DEFAULT_SPAN_BUFFER_SIZE;
