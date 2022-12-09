@@ -24,7 +24,7 @@ namespace zipkin {
 static std::tuple<SystemTime, SteadyTime>
 computeStartTimestamps(const SystemTime &start_system_timestamp,
                        const SteadyTime &start_steady_timestamp) {
-  // If neither the system nor steady timestamps are set, get the tme from the
+  // If neither the system nor steady timestamps are set, get the time from the
   // respective clocks; otherwise, use the set timestamp to initialize the
   // other.
   if (start_system_timestamp == SystemTime() &&
