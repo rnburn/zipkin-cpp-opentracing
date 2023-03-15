@@ -13,15 +13,9 @@
       "type": "string",
       "description": "IP address to use with the default Zipkin endpoint annotation"
     },
-    "collector_host": {
+    "collector_base_url": {
       "type": "string",
-      "description": "Host to use when connecting to Zipkin's collector"
-    },
-    "collector_port": {
-      "type": "integer",
-      "minimum": 1,
-      "maximum": 65535,
-      "description": "Port to use when connecting to Zipkin's collector"
+      "description": "Base url to use when connecting to Zipkin's collector"
     },
     "reporting_period": {
       "type": "integer",

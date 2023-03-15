@@ -46,11 +46,8 @@ OtTracerFactory::MakeTracer(const char *configuration,
     options.service_address =
         IpAddress{IpVersion::v4, document["service_address"].GetString()};
   }
-  if (document.HasMember("collector_host")) {
-    options.collector_host = document["collector_host"].GetString();
-  }
-  if (document.HasMember("collector_port")) {
-    options.collector_port = document["collector_port"].GetInt();
+  if (document.HasMember("collector_base_url")) {
+    options.collector_base_url = document["collector_base_url"].GetString();
   }
   if (document.HasMember("collector_timeout")) {
     options.collector_timeout =
