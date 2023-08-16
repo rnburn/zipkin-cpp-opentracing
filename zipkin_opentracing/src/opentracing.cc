@@ -50,6 +50,9 @@ class OtSpanContext : public ot::SpanContext {
 public:
   OtSpanContext() = default;
 
+  OtSpanContext(const OtSpanContext &span)
+      : span_context_{span.span_context_}, baggage_{span.baggage_} {}
+
   explicit OtSpanContext(zipkin::SpanContext &&span_context)
       : span_context_{std::move(span_context)} {}
 
@@ -67,6 +70,20 @@ public:
     span_context_ = std::move(other.span_context_);
     baggage_ = std::move(other.baggage_);
     return *this;
+  }
+
+  std::unique_ptr<SpanContext> Clone() const noexcept override try {
+    return std::unique_ptr<SpanContext> (new OtSpanContext(*this));
+  } catch (...) {
+    return nullptr;
+  }
+
+  std::string ToTraceID() const noexcept override {
+    return span_context_.traceIdAsHexString();
+  }
+
+  std::string ToSpanID() const noexcept override {
+    return span_context_.idAsHexString();
   }
 
   void ForeachBaggageItem(
@@ -268,6 +285,14 @@ public:
 
   void Log(SystemTime timestamp, const std::vector<std::pair<string_view, Value>>&
                fields) noexcept override {}
+
+  void Log(
+    SystemTime timestamp,
+    std::initializer_list<std::pair<string_view, Value>> fields) noexcept override {}
+
+  void Log(
+    SystemTime timestamp,
+    const std::vector<std::pair<string_view, Value>>& fields) noexcept override {}
 
   const ot::SpanContext &context() const noexcept override {
     return span_context_;
